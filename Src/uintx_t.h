@@ -1,7 +1,7 @@
 /// \file uintx_t.h
 /// \brief Declaration of the extensible unsigned integer class.
 
-#ifndef __uintx_t__
+#if !defined(__uintx_t__)
 #define __uintx_t__
 
 #include <string>
@@ -36,6 +36,14 @@ class uintx_t{
     uintx_t& operator=(const uint32_t); ///< Assignment.
     uintx_t& operator=(const uint64_t); ///< Assignment.
     uintx_t& operator=(const std::string& s); ///< Assignment.
+
+    //increment and decrement operators
+
+    uintx_t& operator++(); ///< Pre-increment.
+    uintx_t operator++(int); ///< Post-increment.
+    
+    uintx_t& operator--(); ///< Pre-decrement.
+    uintx_t operator--(int); ///< Post-decrement.
 
     //addition operators
 

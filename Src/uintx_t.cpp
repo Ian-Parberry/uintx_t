@@ -327,6 +327,47 @@ uintx_t& uintx_t::operator+=(const uintx_t& y){
 #pragma endregion addition
 
 /////////////////////////////////////////////////////////////////////////////
+// Increment and decrement operators.
+
+#pragma region increment
+
+/// Prefix increment operator.
+/// \return Reference to this extensible unsigned integer after increment.
+
+uintx_t& uintx_t::operator++(){
+  (*this) += 1U;
+  return *this;
+} //operator++
+
+/// Post increment operator.
+/// \return This extensible unsigned integer before increment.
+
+uintx_t uintx_t::operator++(int){
+  uintx_t temp = *this;
+  ++*this;
+  return temp;
+} //operator++
+
+/// Prefix decrement operator.
+/// \return Reference to this extensible unsigned integer after decrement.
+    
+uintx_t& uintx_t::operator--(){
+  (*this) -= 1U;
+  return *this;
+} //operator--
+
+/// Post decrement operator.
+/// \return This extensible unsigned integer before decrement.
+
+uintx_t uintx_t::operator--(int){
+  uintx_t temp = *this;
+  ++(*this);
+  return temp;
+} //operator--
+
+#pragma endregion increment
+
+/////////////////////////////////////////////////////////////////////////////
 // Comparison operators.
 
 #pragma region comparison
