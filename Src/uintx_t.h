@@ -86,6 +86,7 @@ class uintx_t{
     friend const uintx_t operator&(const uintx_t&, const uintx_t&); ///< Bit-wise AND.
     friend const uintx_t operator|(const uintx_t&, const uintx_t&); ///< Bit-wise OR.
     friend const uintx_t operator^(const uintx_t&, const uintx_t&); ///< Bit-wise XOR.
+    friend const uintx_t operator~(const uintx_t&); ///< Bit-wise negation.
 
     //subtraction operators
 

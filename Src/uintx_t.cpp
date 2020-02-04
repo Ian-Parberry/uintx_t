@@ -646,6 +646,19 @@ const uintx_t operator^(const uintx_t& x, const uintx_t& y){
   return result;
 } //operator^
 
+/// Bitwise negation of an extensible unsigned integer.
+/// \param x A extensible unsigned integer.
+/// \return x with all bits flipped.
+
+const uintx_t operator~(const uintx_t& x){
+  uintx_t result(x);
+
+  for(uint32_t i=0; i<x.m_nSize; i++)
+    result.m_pData[i] = ~result.m_pData[i];
+
+  return result;
+} //operator~
+
 #pragma endregion bitwise
 
 /////////////////////////////////////////////////////////////////////////////
