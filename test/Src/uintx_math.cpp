@@ -10,13 +10,13 @@
 /// \return The first operand raised to the second.
 
 uintx_t power(uintx_t y, uintx_t z){  
-  uintx_t x = 1U;
+  uintx_t x = 1;
 
-  while(z > 0U){
-    if((z & uintx_t(1U)) != uintx_t(1U))
+  while(z > 0){
+    if((z & uintx_t(1)) != uintx_t(1))
       x *= y;
 
-    z >>= 1U; 
+    z >>= 1; 
     y *= y;
   } //while
 
@@ -28,10 +28,10 @@ uintx_t power(uintx_t y, uintx_t z){
 /// \return y!
 
 uintx_t factorial(uintx_t x){
-  uintx_t result = 1U;
+  uintx_t result = 1;
   uintx_t temp = x;
 
-  while(temp > 1U){
+  while(temp > 1){
     result *= temp; 
     --temp; 
   } //while
@@ -48,7 +48,7 @@ uintx_t gcd(uintx_t x, uintx_t y){
   if(x < y)
     std::swap(x, y); //the first one must be no smaller than the second
 
-  while(x != 0U){
+  while(x != 0){
     const uintx_t temp = x;
     x = y%x; 
     y = temp;
@@ -57,12 +57,31 @@ uintx_t gcd(uintx_t x, uintx_t y){
   return y;
 } //gcd
 
-/// Find the the least significant bit that is set to one.
-/// \return The smallest value of i such that (2^i & x) != 0.
+/// Make a mask that is all zeros except the least significant 1-bit.
+/// \param x The operand.
+/// \return \f$2^i\f$ for the smallest \f$i\f$ such that (\f$2^i\f$ & x) = 1.
 
-uintx_t findfirst1(const uintx_t& x){
-  return x & ~(x - uintx_t(1U));
-} //findfirst1
+uintx_t first1mask(const uintx_t& x){
+  return x & ~(x - 1U);
+} //first1mask
+
+/// Find the index of the least significant 1-bit.
+/// \param x The operand.
+/// \return The smallest \f$i\f$ such that (\f$2^i\f$ & x) = 1.
+
+int32_t first1index(const uintx_t& x){
+  if(x == 0)return -1;
+
+  int32_t count = 0;
+  uintx_t mask(1);
+
+  while((x & mask) == 0){
+    mask <<= 1;
+    count++;
+  } //while
+
+  return count;
+} //first1index
 
 /// Fast computation of Fibonacci numbers using successive doubling, that is,
 /// \f$F(2k) = F(k)(2F(k+1)-F(k)) and F(2k+1) = F(k+1)^2 + F(k)^2\f$.
@@ -70,61 +89,61 @@ uintx_t findfirst1(const uintx_t& x){
 /// \return The xth Fibonacci number.
 
 uintx_t fib(const uintx_t& x){
-	uintx_t a = 0U;
-	uintx_t b = 1U;
-  uintx_t mask = findfirst1(x);
+	uintx_t a = 0;
+	uintx_t b = 1;
+  uintx_t mask = first1mask(x);
 
-	while(mask > uintx_t(0U)){
-		uintx_t d = a*(2U*b - a);
+	while(mask > 0){
+		uintx_t d = a*(2*b - a);
 		uintx_t e = a*a + b*b;
 
 		a = d; 
     b = e;
 
-		if((mask & x) != 0U){
+		if((mask & x) != 0){
 			const uintx_t c = a + b;
 			a = b; 
       b = c;
 		} //if
 
-    mask >>= 1U;
+    mask >>= 1;
 	} //while
 
 	return a;
 } //fib 
 
-//uintx_t sqrt(uintx_t x){
-//  // Find the most significant bit (msb) of the result.
-//
-//  uintx_t j = findfirst1(x)/2 + 1U; 
-//
-//  uintx_t n = uintx_t(1U) << j; //mask for msb of result
-//  uintx_t n2 = n << j; //mask for msb of result^2
-//
-//  // Find the least significant bits of the result.
-//  
-//  n >>= 1; //mask for next least significant bit of result
-//  n2 >>= 2;  //mask for next least significant bit of result^2
-//
-//  uintx_t m = n >> 1; 
-//  uintx_t m2 = n2 >> 2; //m^2
-//
-//  uintx_t q = n | m;
-//  uintx_t q2 = n2 + ((n << (j - 1)) | m2); //q^2
-//  
-//  while(j >= 0 && n2 != x){  
-//    if(q2 <= x){
-//      n = q; 
-//      n2 = q2;
-//    } //if
-//
-//    m >>= 1; 
-//    m2 >>= 2; 
-//    q = n | m;
-//
-//    if(--j > 0)
-//      q2 = n2 + ((n << (j - 1)) | m2); //q^2
-//  } //while
-//  
-//  return n;
-//} //sqrt
+uintx_t sqrt(const uintx_t& x){
+  //start by finding the most significant bit (msb) of the result.
+
+  uint32_t j = first1index(x)/2 + 1; 
+
+  uintx_t n = uintx_t(1) << j; //mask for msb of result
+  uintx_t n2 = n << j; //mask for msb of result^2
+
+  //now compute the rest.
+  
+  n >>= 1; //mask for next least significant bit of result
+  n2 >>= 2;  //mask for next least significant bit of result^2
+
+  uintx_t m = n >> 1U; 
+  uintx_t m2 = n2 >> 2U; //m^2
+
+  uintx_t q = n | m;
+  uintx_t q2 = n2 + ((n << (j - 1)) | m2); //q^2
+  
+  while(j >= 0 && n2 != x){  
+    if(q2 <= x){
+      n = q; 
+      n2 = q2;
+    } //if
+
+    m >>= 1; 
+    m2 >>= 2; 
+    q = n | m;
+
+    if(--j > 0)
+      q2 = n2 + ((n << (j - 1)) | m2); //q^2
+  } //while
+  
+  return n;
+} //sqrt
