@@ -125,10 +125,10 @@ class uintx_t{
     friend const uintx_t operator%(const uintx_t&, const uintx_t&); ///< Remainder.
     friend const uintx_t operator%(const uintx_t&, uint32_t); ///< Remainder.
 
-    //type casts
+    //type conversions and casts
 
-    //operator uint32_t() const; ///< Cast to uint32_t.
-    //operator uint64_t() const; ///< Cast to uint64_t.
+    uint32_t uint32() const; ///< Convert to uint32_t.
+    uint64_t uint64() const; ///< Convert to uint64_t.
     operator std::string() const; ///< Cast to std::string.
 
     //constants

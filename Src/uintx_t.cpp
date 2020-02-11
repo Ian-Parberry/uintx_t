@@ -10,8 +10,8 @@ const uint32_t HalfBytesInWord = 2*sizeof(uint32_t); ///< Number of nibbles in a
 const uint32_t BitsInHalfByte = 4; ///< Number of bits in a nibble.
 const uint32_t BitsInWord = 8*sizeof(uint32_t); ///< Number of bits in a word
 
-const uintx_t uintx_t::Zero(0);
-const uintx_t uintx_t::NaN(-1);
+const uintx_t uintx_t::Zero(0); ///< Extensible unsigned integer zero.
+const uintx_t uintx_t::NaN(-1); ///< Extensible unsigned integer not-a-number.
 
 /////////////////////////////////////////////////////////////////////////////
 //Constructors and destructors.
@@ -41,7 +41,6 @@ uintx_t::uintx_t(int32_t i){
 
   if(i >= 0)
     m_pData[0] = i;
-
   else{
     m_pData[0] = 0;
     m_bNaN = true;
@@ -338,52 +337,57 @@ const uintx_t operator+(const uintx_t& x, const uintx_t& y){
 /// \return Reference to this extensible unsigned integer after y has been added.
 
 uintx_t& uintx_t::operator+=(const uintx_t& y){ 
-  uint32_t left, right, left_msb, right_msb; //operands and their msb's
-  uint32_t sum, sum_msb; //sum and its msb
-  uint32_t carry = 0; //single-bit carry
+  if(y.m_bNaN)
+    m_bNaN = true;
 
-  const uint32_t mask_msb = 1 << (BitsInWord-1); //mask for most significant bit
-  const uint32_t mask_lsb = ~mask_msb; //mask for all but most significant bit
+  if(!m_bNaN){
+    uint32_t left, right, left_msb, right_msb; //operands and their msb's
+    uint32_t sum, sum_msb; //sum and its msb
+    uint32_t carry = 0; //single-bit carry
 
-  uint32_t i; //looping variable
-  uint32_t oldsize = m_nSize;
+    const uint32_t mask_msb = 1 << (BitsInWord-1); //mask for most significant bit
+    const uint32_t mask_lsb = ~mask_msb; //mask for all but most significant bit
 
-  grow(m_nSize > y.m_nSize? m_nSize: y.m_nSize); //make enough space for result
+    uint32_t i; //looping variable
+    uint32_t oldsize = m_nSize;
 
-  for(i=0; i<m_nSize; i++){ //for each word in the result
-    //grab a word from each operand
-    left = i < oldsize? m_pData[i]: 0;
-    right = i < y.m_nSize? y.m_pData[i]: 0;
+    grow(m_nSize > y.m_nSize? m_nSize: y.m_nSize); //make enough space for result
 
-    //extract the most significant bit (msb) from each
-    left_msb = (left & mask_msb) >> (BitsInWord - 1);
-    right_msb = (right & mask_msb) >> (BitsInWord - 1);
+    for(i=0; i<m_nSize; i++){ //for each word in the result
+      //grab a word from each operand
+      left = i < oldsize? m_pData[i]: 0;
+      right = i < y.m_nSize? y.m_pData[i]: 0;
 
-    //zero out the msb from each
-    left = left & mask_lsb;
-    right = right & mask_lsb;
+      //extract the most significant bit (msb) from each
+      left_msb = (left & mask_msb) >> (BitsInWord - 1);
+      right_msb = (right & mask_msb) >> (BitsInWord - 1);
 
-    //add them
-    sum = left + right + carry;
+      //zero out the msb from each
+      left = left & mask_lsb;
+      right = right & mask_lsb;
 
-    //compute carry
-    sum_msb = (sum & mask_msb) >> (BitsInWord - 1);
-    sum = sum & mask_lsb;
-    carry = left_msb + right_msb + sum_msb; //carry is either 0, 1, 2, or 3 here
+      //add them
+      sum = left + right + carry;
 
-    //put leading bit of carry back into sum
-    if((carry == 1) || (carry == 3))
-      sum = sum | mask_msb;
+      //compute carry
+      sum_msb = (sum & mask_msb) >> (BitsInWord - 1);
+      sum = sum & mask_lsb;
+      carry = left_msb + right_msb + sum_msb; //carry is either 0, 1, 2, or 3 here
 
-    m_pData[i] = sum;
+      //put leading bit of carry back into sum
+      if((carry == 1) || (carry == 3))
+        sum = sum | mask_msb;
 
-    //pass along leading bit of carry
-    carry >>= 1;
-  } //for
+      m_pData[i] = sum;
 
-  if(carry >= 1){ //carry of 1 fell out, need more space for result
-    grow(m_nSize + 1); //need one more place for carry
-    m_pData[m_nSize - 1] = 1; //set most significant digit
+      //pass along leading bit of carry
+      carry >>= 1;
+    } //for
+
+    if(carry >= 1){ //carry of 1 fell out, need more space for result
+      grow(m_nSize + 1); //need one more place for carry
+      m_pData[m_nSize - 1] = 1; //set most significant digit
+    } //if
   } //if
 
   return *this;
@@ -438,18 +442,21 @@ uintx_t uintx_t::operator--(int){
 #pragma region comparison
 
 /// Greater than test for two extensible unsigned integers.
+/// Assumes that both are normalized.
 /// \param x A extensible unsigned integer.
 /// \param y A extensible unsigned integer.
 /// \return true If x is greater than y.
 
 bool operator>(const uintx_t& x, const uintx_t& y){ 
-  if(x.m_nSize > y.m_nSize)return true; //x>y
-  if(x.m_nSize < y.m_nSize)return false; //x<y
+  if(x.m_bNaN)return false;
+  if(y.m_bNaN)return true;
+  if(x.m_nSize > y.m_nSize)return true; 
+  if(x.m_nSize < y.m_nSize)return false; 
 
   //check m_pData
   for(int32_t i=x.m_nSize-1; i>=0; i--)
-    if(x.m_pData[i] > y.m_pData[i])return true; //x>y
-    else if(x.m_pData[i] < y.m_pData[i])return false; //x<y
+    if(x.m_pData[i] > y.m_pData[i])return true; 
+    else if(x.m_pData[i] < y.m_pData[i])return false; 
 
   return false; //they're equal
 } //operator>
@@ -460,7 +467,7 @@ bool operator>(const uintx_t& x, const uintx_t& y){
 /// \return true If x is greater than y.
 
 bool operator>(const uintx_t& x, int32_t y){ 
-  return x > uintx_t(y); //lazy way to do it
+  return x > uintx_t(y);
 } //operator>
 
 /// Greater than test for a extensible unsigned integer and an integer.
@@ -469,7 +476,7 @@ bool operator>(const uintx_t& x, int32_t y){
 /// \return true If x is greater than y.
 
 bool operator>(const uintx_t& x, uint32_t y){ 
-  return x > uintx_t(y); //lazy way to do it
+  return x > uintx_t(y);
 } //operator>
 
 /// Greater than or equal to test for two extensible unsigned integers.
@@ -478,8 +485,10 @@ bool operator>(const uintx_t& x, uint32_t y){
 /// \return true If x is greater than or equal to y.
 
 bool operator>=(const uintx_t& x, const uintx_t& y){ 
-  if(x.m_nSize > y.m_nSize)return true; //x>y
-  if(x.m_nSize < y.m_nSize)return false; //x<y
+  if(y.m_bNaN)return true;
+  if(x.m_bNaN)return false;
+  if(x.m_nSize > y.m_nSize)return true; 
+  if(x.m_nSize < y.m_nSize)return false; 
 
   //check m_pData
   for(int32_t i=x.m_nSize-1; i>=0; i--)
@@ -496,7 +505,7 @@ bool operator>=(const uintx_t& x, const uintx_t& y){
 /// \return true If x is greater than or equal to y.
 
 bool operator>=(const uintx_t& x, int32_t y){ 
-  return x >= uintx_t(y); //lazy way to do it
+  return x >= uintx_t(y);
 } //operator>=
 
 /// Greater than or equal to test for a extensible unsigned integer and
@@ -506,7 +515,7 @@ bool operator>=(const uintx_t& x, int32_t y){
 /// \return true If x is greater than or equal to y.
 
 bool operator>=(const uintx_t& x, uint32_t y){ 
-  return x >= uintx_t(y); //lazy way to do it
+  return x >= uintx_t(y);
 } //operator>=
 
 /// Less than test for two extensible unsigned integers.
@@ -515,7 +524,7 @@ bool operator>=(const uintx_t& x, uint32_t y){
 /// \return true If x is less than y.
 
 bool operator<(const uintx_t& x, const uintx_t& y){ 
-  return y > x; //lazy again
+  return y > x;
 } //operator<
 
 /// Less than test for a extensible unsigned integer and an unsigned integer.
@@ -524,7 +533,7 @@ bool operator<(const uintx_t& x, const uintx_t& y){
 /// \return true If x is less than y.
 
 bool operator<(const uintx_t& x, uint32_t y){ 
-  return x < uintx_t(y); //lazy way to do it
+  return x < uintx_t(y);
 } //operator<
 
 /// Less than test for a extensible unsigned integer and an integer.
@@ -533,7 +542,7 @@ bool operator<(const uintx_t& x, uint32_t y){
 /// \return true If x is less than y.
 
 bool operator<(const uintx_t& x, int32_t y){ 
-  return x < uintx_t(y); //lazy way to do it
+  return x < uintx_t(y);
 } //operator<
 
 /// Less than or equal to test for two extensible unsigned integers.
@@ -542,7 +551,7 @@ bool operator<(const uintx_t& x, int32_t y){
 /// \return true If x is less than or equal to y.
 
 bool operator<=(const uintx_t& x, const uintx_t& y){ 
-  return y >= x; //lazy again
+  return y >= x;
 } //operator<=
 
 /// Less than or equal to test for a extensible unsigned integer and an 
@@ -552,7 +561,7 @@ bool operator<=(const uintx_t& x, const uintx_t& y){
 /// \return true If x is less than or equal to y.
 
 bool operator<=(const uintx_t& x, uint32_t y){ 
-  return x <= uintx_t(y); //lazy way to do it
+  return x <= uintx_t(y);
 } //operator<=
 
 /// Less than or equal to test for a extensible unsigned integer and an integer.
@@ -561,7 +570,7 @@ bool operator<=(const uintx_t& x, uint32_t y){
 /// \return true If x is less than or equal to y.
 
 bool operator<=(const uintx_t& x, int32_t y){ 
-  return x <= uintx_t(y); //lazy way to do it
+  return x <= uintx_t(y);
 } //operator<=
 
 /// Equality test for two extensible unsigned integers.
@@ -575,6 +584,9 @@ bool operator==(const uintx_t& x, const uintx_t& y){
 
   if(x.m_bNaN && y.m_bNaN)
     return true;
+
+  if(x.m_bNaN || y.m_bNaN)
+    return false;
 
   //check m_pData
   for(int32_t i=x.m_nSize-1; i>=1; i--)
@@ -645,8 +657,7 @@ bool operator!=(const uintx_t& x, int32_t y){
 /// \return Reference to this extensible unsigned integer after left-shifting.
 
 uintx_t& uintx_t::operator<<=(uint32_t distance){ 
-  //grow to required m_nSize
-  if(*this > 0U){
+  if(*this > 0U && !m_bNaN){
     int32_t oldsize = m_nSize; //save old m_nSize for later
 
     //compute new number of bits - divide by BitsPerWord and round up
@@ -704,39 +715,40 @@ const uintx_t operator<<(const uintx_t& x, int32_t d){
 /// \return Reference to this extensible unsigned integer after right-shifting.
 
 uintx_t& uintx_t::operator>>=(const uint32_t distance){ 
-  //find new size
-  uint32_t newsize = (this->bitcount() - distance + BitsInWord - 1)/BitsInWord;
+  if(!m_bNaN){
+    uint32_t newsize = (this->bitcount() - distance + BitsInWord - 1)/BitsInWord;
 
-  if(newsize < 1)
-    *this = 0;
+    if(newsize < 1)
+      *this = 0;
 
-  else{
-    //shift by word
-    uint32_t dest = 0; //copy destination
-    uint32_t src = dest + distance/BitsInWord; //copy source
+    else{
+      //first shift by word
+      uint32_t dest = 0; //copy destination
+      uint32_t src = dest + distance/BitsInWord; //copy source
 
-    if(dest != src)
-      while(src < m_nSize){ //until end of source
-        m_pData[dest] = m_pData[src]; //copy
-        m_pData[src] = 0; //zero out copied word
-        dest++; src++; //move along
-      } //whilke
+      if(dest != src)
+        while(src < m_nSize){ //until end of source
+          m_pData[dest] = m_pData[src]; //copy
+          m_pData[src] = 0; //zero out copied word
+          dest++; src++; //move along
+        } //while
 
-    //shift within words
-    const uint32_t d = distance%BitsInWord; //shift distance within words
+      //then shift within words
+      const uint32_t d = distance%BitsInWord; //shift distance within words
 
-    if(d > 0)
-      for(dest=0; dest<newsize; dest++){
-        m_pData[dest] >>= d;
-        if(dest < m_nSize - 1)
-          m_pData[dest] = m_pData[dest] | (m_pData[dest + 1] << (BitsInWord - d));
-      } //for
-  } //else
+      if(d > 0)
+        for(dest=0; dest<newsize; dest++){
+          m_pData[dest] >>= d;
+          if(dest < m_nSize - 1)
+            m_pData[dest] = m_pData[dest] | (m_pData[dest + 1] << (BitsInWord - d));
+        } //for
+    } //else
 
-  for(uint32_t i=newsize; i<m_nSize; i++)
-    m_pData[i] = 0; //zero out unused portion
+    for(uint32_t i=newsize; i<m_nSize; i++)
+      m_pData[i] = 0; //zero out unused portion
 
-  this->normalize(); //remove leading zero words
+    this->normalize(); //remove leading zero words
+  } //if
 
   return *this;
 } //operator>>=
@@ -774,12 +786,19 @@ const uintx_t operator>>(const uintx_t& x, int32_t d){
 /// \return x ANDed with y.
 
 const uintx_t operator&(const uintx_t& x, const uintx_t& y){
-  const uint32_t n = std::min(x.m_nSize, y.m_nSize);
   uintx_t result(x);
-  result.grow(n);
 
-  for(uint32_t i=0; i<n; i++)
-    result.m_pData[i] &= y.m_pData[i];
+  if(y.m_bNaN)
+    result.m_bNaN = true;
+
+  if(!result.m_bNaN){
+    const uint32_t n = std::min(x.m_nSize, y.m_nSize);
+
+    result.grow(n);
+
+    for(uint32_t i=0; i<n; i++)
+      result.m_pData[i] &= y.m_pData[i];
+  } //if
 
   return result;
 } //operator&
@@ -790,12 +809,19 @@ const uintx_t operator&(const uintx_t& x, const uintx_t& y){
 /// \return x ORed with y.
 
 const uintx_t operator|(const uintx_t& x, const uintx_t& y){
-  const uint32_t n = std::min(x.m_nSize, y.m_nSize);
   uintx_t result(x);
-  result.grow(n);
 
-  for(uint32_t i=0; i<n; i++)
-    result.m_pData[i] |= y.m_pData[i];
+  if(y.m_bNaN)
+    result.m_bNaN = true;
+
+  if(!result.m_bNaN){
+    const uint32_t n = std::min(x.m_nSize, y.m_nSize);
+    uintx_t result(x);
+    result.grow(n);
+
+    for(uint32_t i=0; i<n; i++)
+      result.m_pData[i] |= y.m_pData[i];
+  } //if
 
   return result;
 } //operator|
@@ -806,12 +832,18 @@ const uintx_t operator|(const uintx_t& x, const uintx_t& y){
 /// \return x ORed with y.
 
 const uintx_t operator^(const uintx_t& x, const uintx_t& y){
-  const uint32_t n = std::min(x.m_nSize, y.m_nSize);
   uintx_t result(x);
-  result.grow(n);
 
-  for(uint32_t i=0; i<n; i++)
-    result.m_pData[i] ^= y.m_pData[i];
+  if(y.m_bNaN)
+    result.m_bNaN = true;
+
+  if(!result.m_bNaN){
+    const uint32_t n = std::min(x.m_nSize, y.m_nSize);
+    result.grow(n);
+
+    for(uint32_t i=0; i<n; i++)
+      result.m_pData[i] ^= y.m_pData[i];
+  } //if
 
   return result;
 } //operator^
@@ -823,8 +855,9 @@ const uintx_t operator^(const uintx_t& x, const uintx_t& y){
 const uintx_t operator~(const uintx_t& x){
   uintx_t result(x);
 
-  for(uint32_t i=0; i<x.m_nSize; i++)
-    result.m_pData[i] = ~result.m_pData[i];
+  if(!result.m_bNaN)
+    for(uint32_t i=0; i<x.m_nSize; i++)
+      result.m_pData[i] = ~result.m_pData[i];
 
   return result;
 } //operator~
@@ -843,13 +876,16 @@ const uintx_t operator~(const uintx_t& x){
 
 const uintx_t operator*(const uintx_t& y, const uintx_t& z){ 
   uintx_t result(0); //place for returned result
-  uintx_t y0(y), z0(z); //local copies
 
-  while(z0 > 0U){
-    result += y0*z0.m_pData[0];
-    y0 <<= BitsInWord;
-    z0 >>= BitsInWord;
-  } //while
+  if(!result.m_bNaN){
+    uintx_t y0(y), z0(z); //local copies
+
+    while(z0 > 0U){
+      result += y0*z0.m_pData[0];
+      y0 <<= BitsInWord;
+      z0 >>= BitsInWord;
+    } //while
+  } //if
 
   return result;
 } //operator*
@@ -870,7 +906,10 @@ const uintx_t operator*(const uintx_t& x, int32_t y){
 /// \return x multiplied by y.
 
 const uintx_t operator*(const uintx_t& x, uint32_t y){ 
-  uintx_t word, carry(0);
+  if(x.m_bNaN)
+    return uintx_t::NaN;
+
+  uintx_t word(0), carry(0);
 
   word.grow(x.m_nSize);
   carry.grow(x.m_nSize + 1);
@@ -949,29 +988,34 @@ const uintx_t operator-(int32_t y, const uintx_t& x){
 /// \return Reference to this extensible unsigned integer after y is subtracted.
 
 uintx_t& uintx_t::operator-=(const uintx_t& y){ 
-  if(y >= *this)
-    *this = 0; //subtracting something too big
+  if(y.m_bNaN)
+    m_bNaN = true;
 
-  else if(y > 0U){
-    bool borrow = false; //single-bit borrow
+  if(!m_bNaN){
+    if(y >= *this)
+      m_bNaN = true; //subtracting something too big
 
-    for(uint32_t i=0; i<m_nSize; i++){ //for each word in the result
-      //grab a word from each operand
-      uint32_t left = m_pData[i];
-      uint32_t right = (i < y.m_nSize)? y.m_pData[i]: 0;
+    else if(y > 0U){
+      bool borrow = false; //single-bit borrow
 
-      //subtract them
-      if(borrow)
-        borrow = ++right == 0; //try to add borrow to right
+      for(uint32_t i=0; i<m_nSize; i++){ //for each word in the result
+        //grab a word from each operand
+        uint32_t left = m_pData[i];
+        uint32_t right = (i < y.m_nSize)? y.m_pData[i]: 0;
 
-      m_pData[i] = left - right; //subtraction of uint32_t borrows automatically
+        //subtract them
+        if(borrow)
+          borrow = ++right == 0; //try to add borrow to right
 
-      if(left < right)
-        borrow = true;
-    } //for
-  } //else
+        m_pData[i] = left - right; //subtraction of uint32_t borrows automatically
 
-  normalize();
+        if(left < right)
+          borrow = true;
+      } //for
+    } //else
+
+    normalize();
+  } //if
 
   return *this;
 } //operator-=
@@ -1082,18 +1126,22 @@ const uintx_t operator%(const uintx_t& y, uint32_t z){
 
 #pragma region typecast
 
-///// \return Least significant 32-bit unsigned integer.
-//
-//uintx_t::operator uint32_t() const{
-//  return m_pData[0];
-//} //uint32_t
-//
-///// Construct a 64-bit unsigned integer from the two least-significant words.
-///// \return Least significant 64-bit unsigned integer.
-//
-//uintx_t::operator uint64_t() const{
-//  return (uint64_t(m_pData[1]) << 32) | uint64_t(m_pData[0]);
-//} //uint64_t
+/// \return Least significant 32-bit unsigned integer.
+
+uint32_t uintx_t::uint32() const{
+  if(m_bNaN)return 0;
+  else if(m_nSize <= 0)return 0;
+  else return m_pData[0];
+} //uint32_t
+
+/// Construct a 64-bit unsigned integer from the two least-significant words.
+/// \return Least significant 64-bit unsigned integer.
+
+uint64_t uintx_t::uint64() const{
+  if(m_bNaN)return 0;
+  else if(m_nSize <= 1)return uint32();
+  return (uint64_t(m_pData[1]) << 32) | uint64_t(m_pData[0]);
+} //uint64_t
 
 /// Convert to a hexadecimal string.
 /// \return std::string containing extensible unsigned integer in hex.
