@@ -13,7 +13,7 @@ uintx_t power(uintx_t y, uintx_t z){
   uintx_t x = 1;
 
   while(z > 0){
-    if((z & uintx_t(1)) != uintx_t(1))
+    if((z & 1) == 1)
       x *= y;
 
     z >>= 1; 
@@ -111,6 +111,10 @@ uintx_t fib(const uintx_t& x){
 
 	return a;
 } //fib 
+
+/// Square root.
+/// \param x The operand.
+/// \return The integer below the square root of the operand.
 
 uintx_t sqrt(const uintx_t& x){
   //start by finding the most significant bit (msb) of the result.
