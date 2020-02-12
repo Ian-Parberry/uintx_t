@@ -41,6 +41,7 @@ uintx_t::uintx_t(int32_t i){
 
   if(i >= 0)
     m_pData[0] = i;
+
   else{
     m_pData[0] = 0;
     m_bNaN = true;
@@ -61,7 +62,7 @@ uintx_t::uintx_t(uint64_t i){
   else{
     m_pData = new uint32_t[1]; 
     m_nSize = 1;
-    m_pData[0] = uint32_t(i) & 0xFFFFFFFF;
+    m_pData[0] = uint32_t(i);
   } //else
 } //uint64_t constructor
   
@@ -84,19 +85,18 @@ uintx_t::uintx_t(int64_t i){
 /// \param string String containing initial value in hexadecimal.
 
 uintx_t::uintx_t(const std::string& s){ 
-  const size_t n = s.size();
-  m_nSize = (uint32_t)std::ceil((double)n/HalfBytesInWord);
-  m_pData = new uint32_t[m_nSize]; //grab space
+  //const size_t n = s.size();
+  //m_nSize = (uint32_t)std::ceil((double)n/HalfBytesInWord);
+  //m_pData = new uint32_t[m_nSize]; //grab space
 
-  for(uint32_t i=0; i<m_nSize; i++)
-    m_pData[i] = 0; //clear m_pData
+  //for(uint32_t i=0; i<m_nSize; i++)
+  //  m_pData[i] = 0; //clear m_pData
 
   loadstring(s); //load string
 } //string constructor
 
 /// Copy constructor.
 /// \param x Extensible unsigned integer to be copied.
-/// \return Reference to this extensible unsigned integer after copying.
 
 uintx_t::uintx_t(const uintx_t& x){ 
   m_nSize = x.m_nSize;
@@ -190,9 +190,22 @@ void uintx_t::normalize(){
 } //normalize
 
 /// Set the value stored to a hex value.
-/// \param string A null-terminated string containing a hex value.
+/// \param string An std::string containing a hex value.
 
-bool uintx_t::loadstring(const std::string& s){ 
+void uintx_t::loadstring(const std::string& s){ 
+  m_bNaN = false;  
+  
+  const size_t n = s.size();
+  const uint32_t nSize = (uint32_t)std::ceil((double)n/HalfBytesInWord);
+
+  if(nSize != m_nSize){
+    delete [] m_pData;
+    m_pData = new uint32_t[m_nSize]; //grab space
+  } //if
+
+  for(uint32_t i=0; i<m_nSize; i++)
+    m_pData[i] = 0; //clear m_pData
+
   size_t i;
   uint32_t word = m_nSize - 1; //current word in long integer
   const size_t digitcount = s.size(); //number of digits in string
@@ -200,37 +213,30 @@ bool uintx_t::loadstring(const std::string& s){
   uint32_t shift = (digitcount%HalfBytesInWord)*BitsInHalfByte; //shift within word
   if(shift <= 0)shift = BitsInWord; //wrap shift amount
 
-  for(i=0; i<m_nSize; i++)
-    m_pData[i]=0; //clear m_pData
-
-  for(i=0; i<digitcount; i++){ //load each digit from string
-    uint32_t digit = 0;
-
-    //convert string[i] from char to digit
+  for(i=0; i<digitcount && !m_bNaN; i++){ //load each digit from string
+    uint32_t digit = 0; //current digit
 
     if(s[i] >= '0' && s[i] <='9')
       digit = s[i] - '0';
+
     else if(s[i] >= 'A' && s[i] <= 'F')
       digit = 10 + s[i] - 'A';
+
     else if(s[i] >= 'a' && s[i] <= 'f')
       digit = 10 + s[i] - 'a';
-    else return false; //safety
 
-    //compute shift amount
+    else m_bNaN = true;
 
-    if(shift <= 0){
-      shift = BitsInWord;
-      word--;
+    if(!m_bNaN){ //put digit into m_pData
+      if(shift <= 0){
+        shift = BitsInWord;
+        word--;
+      } //if
+
+      shift = shift - BitsInHalfByte;
+      m_pData[word] = m_pData[word] | (digit<<shift);
     } //if
-
-    shift = shift - BitsInHalfByte;
-
-    //load digit into word of m_pData
-
-    m_pData[word] = m_pData[word] | (digit<<shift);
   } //for
-
-  return true;
 } //loadstring
 
 /// Compute the number of significant bits in the value stored.
@@ -302,12 +308,13 @@ uintx_t& uintx_t::operator=(const int64_t i){
     m_pData[0] = i & 0xFFFFFFFF;
     m_pData[1] = i >> 32;
     m_bNaN = false;
-    return *this;
   } //else
+
+  return *this;
 } //operator=
 
-/// Assign a hex value from a null-terminated string.
-/// \param s A null-terminated string containing a hex value.
+/// Assign a hex value from a string.
+/// \param s String containing a hex value.
 /// \return Reference to this extensible unsigned integer after copying.
 
 uintx_t& uintx_t::operator=(const std::string& s){ 
@@ -780,48 +787,40 @@ const uintx_t operator>>(const uintx_t& x, int32_t d){
 
 #pragma region bitwise
 
-/// Bitwise AND of two extensible unsigned integers.
+/// Bitwise conjunction of two extensible unsigned integers.
 /// \param x A extensible unsigned integer.
 /// \param y A extensible unsigned integer
 /// \return x ANDed with y.
 
 const uintx_t operator&(const uintx_t& x, const uintx_t& y){
+  if(x.m_bNaN || y.m_bNaN)
+    return uintx_t::NaN;
+
   uintx_t result(x);
+  const uint32_t n = std::min(x.m_nSize, y.m_nSize);
+  result.grow(n);
 
-  if(y.m_bNaN)
-    result.m_bNaN = true;
-
-  if(!result.m_bNaN){
-    const uint32_t n = std::min(x.m_nSize, y.m_nSize);
-
-    result.grow(n);
-
-    for(uint32_t i=0; i<n; i++)
-      result.m_pData[i] &= y.m_pData[i];
-  } //if
+  for(uint32_t i=0; i<n; i++)
+    result.m_pData[i] &= y.m_pData[i];
 
   return result;
 } //operator&
 
-/// Logical Bitwise of two extensible unsigned integers.
+/// Logical Bitwise disjunction of two extensible unsigned integers.
 /// \param x A extensible unsigned integer.
 /// \param y A extensible unsigned integer
 /// \return x ORed with y.
 
 const uintx_t operator|(const uintx_t& x, const uintx_t& y){
+  if(x.m_bNaN || y.m_bNaN)
+    return uintx_t::NaN;
+
   uintx_t result(x);
+  const uint32_t n = std::min(x.m_nSize, y.m_nSize);
+  result.grow(n);
 
-  if(y.m_bNaN)
-    result.m_bNaN = true;
-
-  if(!result.m_bNaN){
-    const uint32_t n = std::min(x.m_nSize, y.m_nSize);
-    uintx_t result(x);
-    result.grow(n);
-
-    for(uint32_t i=0; i<n; i++)
-      result.m_pData[i] |= y.m_pData[i];
-  } //if
+  for(uint32_t i=0; i<n; i++)
+    result.m_pData[i] |= y.m_pData[i];
 
   return result;
 } //operator|
@@ -832,18 +831,15 @@ const uintx_t operator|(const uintx_t& x, const uintx_t& y){
 /// \return x ORed with y.
 
 const uintx_t operator^(const uintx_t& x, const uintx_t& y){
+  if(x.m_bNaN || y.m_bNaN)
+    return uintx_t::NaN;
+
   uintx_t result(x);
+  const uint32_t n = std::min(x.m_nSize, y.m_nSize);
+  result.grow(n);
 
-  if(y.m_bNaN)
-    result.m_bNaN = true;
-
-  if(!result.m_bNaN){
-    const uint32_t n = std::min(x.m_nSize, y.m_nSize);
-    result.grow(n);
-
-    for(uint32_t i=0; i<n; i++)
-      result.m_pData[i] ^= y.m_pData[i];
-  } //if
+  for(uint32_t i=0; i<n; i++)
+    result.m_pData[i] ^= y.m_pData[i];
 
   return result;
 } //operator^
@@ -875,17 +871,19 @@ const uintx_t operator~(const uintx_t& x){
 /// \return y multiplied by z.
 
 const uintx_t operator*(const uintx_t& y, const uintx_t& z){ 
+  if(y.m_bNaN || z.m_bNaN)
+    return uintx_t::NaN;
+
   uintx_t result(0); //place for returned result
 
-  if(!result.m_bNaN){
-    uintx_t y0(y), z0(z); //local copies
+  uintx_t y0(y), z0(z); //local copies
 
-    while(z0 > 0U){
-      result += y0*z0.m_pData[0];
-      y0 <<= BitsInWord;
-      z0 >>= BitsInWord;
-    } //while
-  } //if
+  while(z0 > 0){
+    result += y0*z0.m_pData[0];
+
+    y0 <<= BitsInWord;
+    z0 >>= BitsInWord;
+  } //while
 
   return result;
 } //operator*
@@ -1038,6 +1036,9 @@ uintx_t& uintx_t::operator-=(uint32_t y){
 /// \return x divided by y, rounded down.
 
 const uintx_t operator/(const uintx_t& y, const uintx_t& z){
+  if(y.m_bNaN || z.m_bNaN)
+    return uintx_t::NaN;
+
   uintx_t q(0); //result
 
   if(y >= z){
@@ -1086,6 +1087,9 @@ uintx_t& uintx_t::operator/=(const uintx_t& y){
 /// \return The remainder after y is divided by z.
 
 const uintx_t operator%(const uintx_t& y, const uintx_t& z){ 
+  if(y.m_bNaN || z.m_bNaN)
+    return uintx_t::NaN;
+
   uintx_t result(y);
   uintx_t w(z);
 
@@ -1095,7 +1099,7 @@ const uintx_t operator%(const uintx_t& y, const uintx_t& z){
   while(w > z){ 
     w >>= 1;
 
-    if(w <= y)
+    if(w <= result)
       result -= w;
   } //while
 
@@ -1110,14 +1114,14 @@ uintx_t& uintx_t::operator%=(const uintx_t& y){
   return *this = *this%y;
 } //operator%=
 
-/// Remainder after dividing a extensible unsigned integer by an unsigned integer.
-/// \param y A extensible unsigned integer.
-/// \param z An unsigned integer.
-/// \return The remainder after y is divided by z.
-
-const uintx_t operator%(const uintx_t& y, uint32_t z){ 
-  return y%uintx_t(int32_t(z));
-} //operator%
+///// Remainder after dividing a extensible unsigned integer by an unsigned integer.
+///// \param y A extensible unsigned integer.
+///// \param z An unsigned integer.
+///// \return The remainder after y is divided by z.
+//
+//const uintx_t operator%(const uintx_t& y, uint32_t z){ 
+//  return y%uintx_t(int32_t(z));
+//} //operator%
 
 #pragma endregion division
 
@@ -1126,39 +1130,43 @@ const uintx_t operator%(const uintx_t& y, uint32_t z){
 
 #pragma region typecast
 
-/// \return Least significant 32-bit unsigned integer.
+/// Convert to a 32-bit unsigned integer from the least significant word.
+/// \param x Operand.
+/// \return Least significant 32 bits of the operand.
 
-uint32_t uintx_t::uint32() const{
-  if(m_bNaN)return 0;
-  else if(m_nSize <= 0)return 0;
-  else return m_pData[0];
-} //uint32_t
+const uint32_t to_uint32(uintx_t x){
+  if(x.m_bNaN)return 0;
+  else if(x.m_nSize <= 0)return 0;
+  else return x.m_pData[0];
+} //to_uint32
 
 /// Construct a 64-bit unsigned integer from the two least-significant words.
-/// \return Least significant 64-bit unsigned integer.
+/// \param x Operand.
+/// \return Least significant 64 bits of the operand.
 
-uint64_t uintx_t::uint64() const{
-  if(m_bNaN)return 0;
-  else if(m_nSize <= 1)return uint32();
-  return (uint64_t(m_pData[1]) << 32) | uint64_t(m_pData[0]);
-} //uint64_t
+const uint64_t to_uint64(uintx_t x){
+  if(x.m_bNaN)return 0;
+  else if(x.m_nSize <= 1)return to_uint32(x);
+  return (uint64_t(x.m_pData[1]) << 32) | uint64_t(x.m_pData[0]);
+} //to_uint64
 
-/// Convert to a hexadecimal string.
-/// \return std::string containing extensible unsigned integer in hex.
+/// Convert to a hexadecimal string with "0x" at the front.
+/// \param x Operand.
+/// \return std::string containing the operand in hexadecimal notation.
 
-uintx_t::operator std::string() const{  
-  if(m_bNaN)return std::string("NaN");
+const std::string to_string16(uintx_t x){  
+  if(x.m_bNaN)return std::string("NaN");
   std::string s; //result
 
   //convert to a backwards hex string, ie. least-significant digit first
 
-  for(uint32_t i=0; i<m_nSize; i++){ //for each word, least significant first
-    uint32_t n = m_pData[i]; //current word
+  for(uint32_t i=0; i<x.m_nSize; i++){ //for each word, least significant first
+    uint32_t n = x.m_pData[i]; //current word
     const uint32_t size = 2*sizeof(uint32_t); //number of digits in a word
 
     for(auto i=0; i<size; i++){ //for each digit, least-significant first
-      uint32_t digit = n & 0xF; //grab a digit
-      char c = char(digit + (digit < 10? '0': 'A' - 10));
+      const uint32_t digit = n & 0xF; //grab a digit
+      const char c = char(digit + (digit < 10? '0': 'A' - 10));
       s += c; //append to string
       n >>= 4; //next digit
     } //while
@@ -1172,12 +1180,35 @@ uintx_t::operator std::string() const{
   } //while
 
   if(s == "")s = "0"; //safety
-  s += "x0"; //hex indicator
+  s += "x0"; //hex indicator, backwards
 
   //reverse the string to make it most significant digit first, and return
 
   std::reverse(s.begin(), s.end());
   return s;
-} //string
+} //to_string16
+
+/// Convert to a decimal string.
+/// \return std::string containing the operand in decimal notation.
+
+const std::string to_string(uintx_t x){  
+  if(x.m_bNaN)return std::string("NaN");
+  std::string s; //result
+
+  if(x == 0)
+    s = "0";
+
+  else{
+    while(x > 0){
+      const uint32_t digit = to_uint32(x%10);
+      const char c = char(digit + '0');
+      s += c;
+      x /= 10;
+    } //while
+  } //else
+  
+  std::reverse(s.begin(), s.end());
+  return s;
+} //to_string
 
 #pragma endregion typecast

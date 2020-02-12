@@ -16,7 +16,7 @@ class uintx_t{
     uint32_t m_nSize = 0; ///< Number of words in m_pData.
     bool m_bNaN = false; ///< Not a number.
 
-    bool loadstring(const std::string&); ///< Load hex string.
+    void loadstring(const std::string&); ///< Load hex string.
     void reallocate(const uint32_t s); ///< Reallocate space for s words.
     void grow(const uint32_t s); ///< Grow space for s words.
     void normalize(); ///< Remove leading zero words.
@@ -123,13 +123,14 @@ class uintx_t{
 
     uintx_t& operator%=(const uintx_t&); ///< Remainder.
     friend const uintx_t operator%(const uintx_t&, const uintx_t&); ///< Remainder.
-    friend const uintx_t operator%(const uintx_t&, uint32_t); ///< Remainder.
+    //friend const uintx_t operator%(const uintx_t&, uint32_t); ///< Remainder.
 
-    //type conversions and casts
+    //type conversions
 
-    uint32_t uint32() const; ///< Convert to uint32_t.
-    uint64_t uint64() const; ///< Convert to uint64_t.
-    operator std::string() const; ///< Cast to std::string.
+    friend const std::string to_string16(uintx_t x); ///< Convert to hex string.
+    friend const std::string to_string(uintx_t x); ///< Convert to decimal string.
+    friend const uint32_t to_uint32(uintx_t x); ///< Convert to 32-bit unsigned int.
+    friend const uint64_t to_uint64(uintx_t x); ///< Convert to 32-bit unsigned int.
 
     //constants
 
