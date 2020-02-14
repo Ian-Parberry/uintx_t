@@ -8,9 +8,7 @@
 
 const uint32_t HalfBytesInWord = 2*sizeof(uint32_t); ///< Number of nibbles in a word.
 const uint32_t BitsInHalfByte = 4; ///< Number of bits in a nibble.
-const uint32_t BitsInWord = 8*sizeof(uint32_t); ///< Number of bits in a word
-
-const uintx_t uintx_t::Zero(0); ///< Extensible unsigned integer zero.
+const uint32_t BitsInWord = 8*sizeof(uint32_t); ///< Number of bits in a word.
 const uintx_t uintx_t::NaN(-1); ///< Extensible unsigned integer not-a-number.
 
 /////////////////////////////////////////////////////////////////////////////
@@ -85,13 +83,6 @@ uintx_t::uintx_t(int64_t i){
 /// \param string String containing initial value in hexadecimal.
 
 uintx_t::uintx_t(const std::string& s){ 
-  //const size_t n = s.size();
-  //m_nSize = (uint32_t)std::ceil((double)n/HalfBytesInWord);
-  //m_pData = new uint32_t[m_nSize]; //grab space
-
-  //for(uint32_t i=0; i<m_nSize; i++)
-  //  m_pData[i] = 0; //clear m_pData
-
   loadstring(s); //load string
 } //string constructor
 
@@ -122,13 +113,13 @@ uintx_t::~uintx_t(){
 #pragma region general
 
 /// Change the number of words allocated and zero out the value stored.
-/// \param s Number of words to allocate.
+/// \param size Number of words to allocate.
 
-void uintx_t::reallocate(const uint32_t s){ 
-  if(m_nSize != s){ //if change needed
-    m_nSize = s; 
-    delete [] m_pData; 
-    m_pData = new uint32_t[s]; //get space
+void uintx_t::reallocate(const uint32_t size){ 
+  if(m_nSize != size){ //if change needed
+    m_nSize = size; 
+    delete [] m_pData; //get rid of old space
+    m_pData = new uint32_t[size]; //get new space
 
     for(uint32_t i=0; i<m_nSize; i++)
       m_pData[i] = 0; //zero it out
@@ -168,28 +159,22 @@ void uintx_t::normalize(){
   while(top > 0 && m_pData[top] == 0)
     top--;
 
-  if(top < 0){ //this uintx_t is equal to zero
-    if(m_nSize > 1){ //uses more than 1 word
-      m_nSize = 1; 
-      m_pData = new uint32_t[m_nSize]; //grab new space
-      m_pData[0] = olddata[0]; //copy over old digits
+  top = std::max(0, top);
 
-      delete [] olddata; //recycle old space
-    } //if
-  } //if
-
-  else if((uint32_t)top < m_nSize - 1){ //there are nonzero leading words
-    m_nSize = top + 1; 
+  if((uint32_t)top < m_nSize - 1){ //change is needed
+    m_nSize = top + 1; //new size
     m_pData = new uint32_t[m_nSize]; //grab new space
 
-    for(int32_t i=0; i<=top; i++)
-      m_pData[i] = olddata[i]; //copy over old digits
+    for(int32_t i=0; i<=top; i++) //copy over old digits
+      m_pData[i] = olddata[i];
 
     delete [] olddata; //recycle old space
   } //if
 } //normalize
 
-/// Set the value stored to a hex value.
+/// Set to a hex value contained in an std::string. Both lower-case and
+/// upper case letters are allowed. 0x at the start of the string is optional. 
+/// Gets set to NaN if there's an unexpected character in the string.
 /// \param string An std::string containing a hex value.
 
 void uintx_t::loadstring(const std::string& s){ 
@@ -206,28 +191,34 @@ void uintx_t::loadstring(const std::string& s){
   for(uint32_t i=0; i<m_nSize; i++)
     m_pData[i] = 0; //clear m_pData
 
-  size_t i;
   uint32_t word = m_nSize - 1; //current word in long integer
   const size_t digitcount = s.size(); //number of digits in string
 
   uint32_t shift = (digitcount%HalfBytesInWord)*BitsInHalfByte; //shift within word
   if(shift <= 0)shift = BitsInWord; //wrap shift amount
 
-  for(i=0; i<digitcount && !m_bNaN; i++){ //load each digit from string
+  const size_t i0 = (n >= 2 && s[0] == '0' && s[1] == 'x')? 2: 0; //skip 0x if present
+  m_bNaN = false; //optimistically we believe that this is a number
+
+  for(size_t i=i0; i<digitcount && !m_bNaN; i++){ //load each digit from string
     uint32_t digit = 0; //current digit
 
-    if(s[i] >= '0' && s[i] <='9')
+    //get current digit from hex character
+
+    if(s[i] >= '0' && s[i] <='9') //0-9
       digit = s[i] - '0';
 
-    else if(s[i] >= 'A' && s[i] <= 'F')
+    else if(s[i] >= 'A' && s[i] <= 'F') //A-F
       digit = 10 + s[i] - 'A';
 
-    else if(s[i] >= 'a' && s[i] <= 'f')
+    else if(s[i] >= 'a' && s[i] <= 'f') //a-f
       digit = 10 + s[i] - 'a';
 
-    else m_bNaN = true;
+    else m_bNaN = true; //non-hex character encountered
 
-    if(!m_bNaN){ //put digit into m_pData
+    //put digit into m_pData
+
+    if(!m_bNaN){
       if(shift <= 0){
         shift = BitsInWord;
         word--;
@@ -243,7 +234,7 @@ void uintx_t::loadstring(const std::string& s){
 /// \return the number of bits stored.
 
 const uint32_t uintx_t::bitcount() const{
-  if(m_nSize <= 0)return 0;
+  if(m_bNaN || m_nSize <= 0)return 0;
 
   uint32_t word = m_pData[m_nSize - 1]; //most significant word in x
   uint32_t count = 0; //counter
@@ -263,9 +254,9 @@ const uint32_t uintx_t::bitcount() const{
 
 #pragma region assignment
 
-/// Assign a extensible unsigned integer.
-/// \param x Extensible unsigned integer to be copied.
-/// \return Reference to this extensible unsigned integer after copying.
+/// Assignment operator.
+/// \param x Operand.
+/// \return Reference after assignment.
 
 uintx_t& uintx_t::operator=(const uintx_t& x){ 
   if(this != &x){ //protect against self assignment
@@ -278,50 +269,6 @@ uintx_t& uintx_t::operator=(const uintx_t& x){
   return *this;
 } //operator=
 
-/// Assign a 32-bit integer.
-/// \param i Integer to be copied.
-/// \return Reference to this extensible unsigned integer after copying.
-
-uintx_t& uintx_t::operator=(const int32_t i){ 
-  if(i < 0)
-    m_bNaN = true;
-
-  else{
-    reallocate(1); 
-    *m_pData = i;
-    m_bNaN = false;
-  } //else
-
-  return *this;
-} //operator=
-
-/// Assign a 64-bit unsigned integer.
-/// \param i Unsigned integer to be copied.
-/// \return Reference to this extensible unsigned integer after copying.
-
-uintx_t& uintx_t::operator=(const int64_t i){ 
-  if(i < 0)
-    m_bNaN = true;
-
-  else{
-    reallocate(2); 
-    m_pData[0] = i & 0xFFFFFFFF;
-    m_pData[1] = i >> 32;
-    m_bNaN = false;
-  } //else
-
-  return *this;
-} //operator=
-
-/// Assign a hex value from a string.
-/// \param s String containing a hex value.
-/// \return Reference to this extensible unsigned integer after copying.
-
-uintx_t& uintx_t::operator=(const std::string& s){ 
-  loadstring(s);
-  return *this;
-} //operator=
-
 #pragma endregion assignment
 
 /////////////////////////////////////////////////////////////////////////////
@@ -330,9 +277,9 @@ uintx_t& uintx_t::operator=(const std::string& s){
 #pragma region addition
 
 /// Add a pair of extensible unsigned integers.
-/// \param x A extensible unsigned integer.
-/// \param y A extensible unsigned integer.
-/// \return x + y.
+/// \param x First operand.
+/// \param y Second operand.
+/// \return The sum of the two operands.
 
 const uintx_t operator+(const uintx_t& x, const uintx_t& y){
   uintx_t result = x;
@@ -340,8 +287,8 @@ const uintx_t operator+(const uintx_t& x, const uintx_t& y){
 } //operator+
 
 /// Add a extensible unsigned integer.
-/// \param y A extensible unsigned integer.
-/// \return Reference to this extensible unsigned integer after y has been added.
+/// \param y Operand.
+/// \return Reference after addition.
 
 uintx_t& uintx_t::operator+=(const uintx_t& y){ 
   if(y.m_bNaN)
@@ -403,548 +350,6 @@ uintx_t& uintx_t::operator+=(const uintx_t& y){
 #pragma endregion addition
 
 /////////////////////////////////////////////////////////////////////////////
-// Increment and decrement operators.
-
-#pragma region increment
-
-/// Prefix increment operator.
-/// \return Reference to this extensible unsigned integer after increment.
-
-uintx_t& uintx_t::operator++(){
-  (*this) += 1;
-  return *this;
-} //operator++
-
-/// Post increment operator.
-/// \return This extensible unsigned integer before increment.
-
-uintx_t uintx_t::operator++(int){
-  uintx_t temp = *this;
-  ++*this;
-  return temp;
-} //operator++
-
-/// Prefix decrement operator.
-/// \return Reference to this extensible unsigned integer after decrement.
-    
-uintx_t& uintx_t::operator--(){
-  (*this) -= 1;
-  return *this;
-} //operator--
-
-/// Post decrement operator.
-/// \return This extensible unsigned integer before decrement.
-
-uintx_t uintx_t::operator--(int){
-  uintx_t temp = *this;
-  --(*this);
-  return temp;
-} //operator--
-
-#pragma endregion increment
-
-/////////////////////////////////////////////////////////////////////////////
-// Comparison operators.
-
-#pragma region comparison
-
-/// Greater than test for two extensible unsigned integers.
-/// Assumes that both are normalized.
-/// \param x A extensible unsigned integer.
-/// \param y A extensible unsigned integer.
-/// \return true If x is greater than y.
-
-bool operator>(const uintx_t& x, const uintx_t& y){ 
-  if(x.m_bNaN)return false;
-  if(y.m_bNaN)return true;
-  if(x.m_nSize > y.m_nSize)return true; 
-  if(x.m_nSize < y.m_nSize)return false; 
-
-  //check m_pData
-  for(int32_t i=x.m_nSize-1; i>=0; i--)
-    if(x.m_pData[i] > y.m_pData[i])return true; 
-    else if(x.m_pData[i] < y.m_pData[i])return false; 
-
-  return false; //they're equal
-} //operator>
-
-/// Greater than test for a extensible unsigned integer and an integer.
-/// \param x A extensible unsigned integer.
-/// \param y An integer.
-/// \return true If x is greater than y.
-
-bool operator>(const uintx_t& x, int32_t y){ 
-  return x > uintx_t(y);
-} //operator>
-
-/// Greater than test for a extensible unsigned integer and an integer.
-/// \param x A extensible unsigned integer.
-/// \param y An integer.
-/// \return true If x is greater than y.
-
-bool operator>(const uintx_t& x, uint32_t y){ 
-  return x > uintx_t(y);
-} //operator>
-
-/// Greater than or equal to test for two extensible unsigned integers.
-/// \param x A extensible unsigned integer.
-/// \param y A extensible unsigned integer.
-/// \return true If x is greater than or equal to y.
-
-bool operator>=(const uintx_t& x, const uintx_t& y){ 
-  if(y.m_bNaN)return true;
-  if(x.m_bNaN)return false;
-  if(x.m_nSize > y.m_nSize)return true; 
-  if(x.m_nSize < y.m_nSize)return false; 
-
-  //check m_pData
-  for(int32_t i=x.m_nSize-1; i>=0; i--)
-    if(x.m_pData[i] >y .m_pData[i])return true; //x>y
-    else if(x.m_pData[i] < y.m_pData[i])return false; //x<y
-
-  return true; //they're equal
-} //operator>=
-
-/// Greater than or equal to test for a extensible unsigned integer and
-/// an integer.
-/// \param x A extensible unsigned integer.
-/// \param y An integer.
-/// \return true If x is greater than or equal to y.
-
-bool operator>=(const uintx_t& x, int32_t y){ 
-  return x >= uintx_t(y);
-} //operator>=
-
-/// Greater than or equal to test for a extensible unsigned integer and
-/// an unsigned integer.
-/// \param x A extensible unsigned integer.
-/// \param y An unsigned integer.
-/// \return true If x is greater than or equal to y.
-
-bool operator>=(const uintx_t& x, uint32_t y){ 
-  return x >= uintx_t(y);
-} //operator>=
-
-/// Less than test for two extensible unsigned integers.
-/// \param x A extensible unsigned integer.
-/// \param y A extensible unsigned integer.
-/// \return true If x is less than y.
-
-bool operator<(const uintx_t& x, const uintx_t& y){ 
-  return y > x;
-} //operator<
-
-/// Less than test for a extensible unsigned integer and an unsigned integer.
-/// \param x A extensible unsigned integer.
-/// \param y An unsigned integer.
-/// \return true If x is less than y.
-
-bool operator<(const uintx_t& x, uint32_t y){ 
-  return x < uintx_t(y);
-} //operator<
-
-/// Less than test for a extensible unsigned integer and an integer.
-/// \param x A extensible unsigned integer.
-/// \param y An integer.
-/// \return true If x is less than y.
-
-bool operator<(const uintx_t& x, int32_t y){ 
-  return x < uintx_t(y);
-} //operator<
-
-/// Less than or equal to test for two extensible unsigned integers.
-/// \param x A extensible unsigned integer.
-/// \param y A extensible unsigned integer.
-/// \return true If x is less than or equal to y.
-
-bool operator<=(const uintx_t& x, const uintx_t& y){ 
-  return y >= x;
-} //operator<=
-
-/// Less than or equal to test for a extensible unsigned integer and an 
-/// unsigned integer.
-/// \param x A extensible unsigned integer.
-/// \param y An unsigned integer.
-/// \return true If x is less than or equal to y.
-
-bool operator<=(const uintx_t& x, uint32_t y){ 
-  return x <= uintx_t(y);
-} //operator<=
-
-/// Less than or equal to test for a extensible unsigned integer and an integer.
-/// \param x A extensible unsigned integer.
-/// \param y An integer.
-/// \return true If x is less than or equal to y.
-
-bool operator<=(const uintx_t& x, int32_t y){ 
-  return x <= uintx_t(y);
-} //operator<=
-
-/// Equality test for two extensible unsigned integers.
-/// \param x A extensible unsigned integer.
-/// \param y A extensible unsigned integer.
-/// \return true If x is equal to y.
-
-bool operator==(const uintx_t& x, const uintx_t& y){ 
-  if(x.m_nSize != y.m_nSize)
-    return false;
-
-  if(x.m_bNaN && y.m_bNaN)
-    return true;
-
-  if(x.m_bNaN || y.m_bNaN)
-    return false;
-
-  //check m_pData
-  for(int32_t i=x.m_nSize-1; i>=1; i--)
-    if(x.m_pData[i] != y.m_pData[i])
-      return false;
-  
-  if(x.m_pData[0] != y.m_pData[0])
-    return false;
-
-  return true; //they're equal
-} //operator==
-
-/// Equality test for a extensible unsigned integer and an unsigned integer.
-/// \param x A extensible unsigned integer.
-/// \param y An unsigned integer.
-/// \return true If x is equal to y.
-
-bool operator==(const uintx_t& x, uint32_t y){ 
-  return (x.m_nSize == 1) && (x.m_pData[0] == y);
-} //operator==
-
-/// Equality test for a extensible unsigned integer and an integer.
-/// \param x A extensible unsigned integer.
-/// \param y An integer.
-/// \return true If x is equal to y.
-
-bool operator==(const uintx_t& x, int32_t y){ 
-  if(y < 0)return false;
-  else return (x.m_nSize == 1) && (x.m_pData[0] == uint32_t(y));
-} //operator==
-
-/// Inequality test for two extensible unsigned integers.
-/// \param x A extensible unsigned integer.
-/// \param y A extensible unsigned integer.
-/// \return true If x is not equal to y.
-
-bool operator!=(const uintx_t& x, const uintx_t& y){ 
-  return !(x == y); 
-} //operator!=
-
-/// Inequality test for a extensible unsigned integer and an unsigned integer.
-/// \param x A extensible unsigned integer.
-/// \param y An unsigned integer.
-/// \return true If x is not equal to y.
-
-bool operator!=(const uintx_t& x, uint32_t y){ 
-  return !(x == y); 
-} //operator!=
-
-/// Inequality test for a extensible unsigned integer and an integer.
-/// \param x A extensible unsigned integer.
-/// \param y An integer.
-/// \return true If x is not equal to y.
-
-bool operator!=(const uintx_t& x, int32_t y){ 
-  return !(x == y); 
-} //operator!=
-
-#pragma endregion comparison
-
-/////////////////////////////////////////////////////////////////////////////
-// Bit shift operators.
-
-#pragma region shift
-
-/// Left-shift operator.
-/// \param distance Number of bits to left-shift by.
-/// \return Reference to this extensible unsigned integer after left-shifting.
-
-uintx_t& uintx_t::operator<<=(uint32_t distance){ 
-  if(*this > 0U && !m_bNaN){
-    int32_t oldsize = m_nSize; //save old m_nSize for later
-
-    //compute new number of bits - divide by BitsPerWord and round up
-    grow((this->bitcount() + distance + BitsInWord - 1)/BitsInWord);
-
-    //shift by word
-    int32_t dest = m_nSize - 1; //copy destination
-    int32_t src = dest - distance/BitsInWord; //copy source
-
-    while(src >= 0){ //until end of source
-      if(src < oldsize)
-        m_pData[dest] = m_pData[src]; //copy
-        dest--; src--; //move along
-    } //while
-
-    while(dest >= 0)
-      m_pData[dest--] = 0; //fill bottom with zeros
-
-    //shift within words
-    const uint32_t d = distance%BitsInWord; //shift distance within words
-
-    if(d > 0)
-      for(dest=m_nSize - 1; dest>=0; --dest){
-        m_pData[dest] <<= d;
-        if(dest > 0)
-          m_pData[dest] = m_pData[dest] | (m_pData[dest - 1] >> (BitsInWord - d));
-      } //for
-  } //if
-
-  return *this;
-} //operator<<=
-
-/// Left-shift a extensible unsigned integer.
-/// \param x A extensible unsigned integer.
-/// \param d Number of bits to left-shift by.
-/// \return x left-shifted by d bits.
-
-const uintx_t operator<<(const uintx_t& x, uint32_t d){ 
-  uintx_t result = x;
-  return result <<= d; 
-} //operator<<
-
-/// Left-shift a extensible unsigned integer.
-/// \param x A extensible unsigned integer.
-/// \param d Number of bits to left-shift by.
-/// \return x left-shifted by d bits.
-
-const uintx_t operator<<(const uintx_t& x, int32_t d){ 
-  if(d < 0)return x >> -d;
-  else return x << uint32_t(d);
-} //operator<<
-
-/// Right-shift this.
-/// \param distance Number of bits to right-shift by.
-/// \return Reference to this extensible unsigned integer after right-shifting.
-
-uintx_t& uintx_t::operator>>=(const uint32_t distance){ 
-  if(!m_bNaN){
-    uint32_t newsize = (this->bitcount() - distance + BitsInWord - 1)/BitsInWord;
-
-    if(newsize < 1)
-      *this = 0;
-
-    else{
-      //first shift by word
-      uint32_t dest = 0; //copy destination
-      uint32_t src = dest + distance/BitsInWord; //copy source
-
-      if(dest != src)
-        while(src < m_nSize){ //until end of source
-          m_pData[dest] = m_pData[src]; //copy
-          m_pData[src] = 0; //zero out copied word
-          dest++; src++; //move along
-        } //while
-
-      //then shift within words
-      const uint32_t d = distance%BitsInWord; //shift distance within words
-
-      if(d > 0)
-        for(dest=0; dest<newsize; dest++){
-          m_pData[dest] >>= d;
-          if(dest < m_nSize - 1)
-            m_pData[dest] = m_pData[dest] | (m_pData[dest + 1] << (BitsInWord - d));
-        } //for
-    } //else
-
-    for(uint32_t i=newsize; i<m_nSize; i++)
-      m_pData[i] = 0; //zero out unused portion
-
-    this->normalize(); //remove leading zero words
-  } //if
-
-  return *this;
-} //operator>>=
-
-/// Right-shift a extensible unsigned integer.
-/// \param x A extensible unsigned integer.
-/// \param d Number of bits to right-shift by.
-/// \return x right-shifted by d bits.
-
-const uintx_t operator>>(const uintx_t& x, uint32_t d){ 
-  uintx_t result = x;
-  return result >>= d; 
-} //operator>>
-
-/// Right-shift a extensible integer.
-/// \param x A extensible unsigned integer.
-/// \param d Number of bits to right-shift by.
-/// \return x right-shifted by d bits.
-
-const uintx_t operator>>(const uintx_t& x, int32_t d){ 
-  if(d < 0)return x << -d;
-  else return x >> uint32_t(d);
-} //operator>>
-
-#pragma endregion shift
-
-/////////////////////////////////////////////////////////////////////////////
-// Bitwise operators.
-
-#pragma region bitwise
-
-/// Bitwise conjunction of two extensible unsigned integers.
-/// \param x A extensible unsigned integer.
-/// \param y A extensible unsigned integer
-/// \return x ANDed with y.
-
-const uintx_t operator&(const uintx_t& x, const uintx_t& y){
-  if(x.m_bNaN || y.m_bNaN)
-    return uintx_t::NaN;
-
-  uintx_t result(x);
-  const uint32_t n = std::min(x.m_nSize, y.m_nSize);
-  result.grow(n);
-
-  for(uint32_t i=0; i<n; i++)
-    result.m_pData[i] &= y.m_pData[i];
-
-  return result;
-} //operator&
-
-/// Logical Bitwise disjunction of two extensible unsigned integers.
-/// \param x A extensible unsigned integer.
-/// \param y A extensible unsigned integer
-/// \return x ORed with y.
-
-const uintx_t operator|(const uintx_t& x, const uintx_t& y){
-  if(x.m_bNaN || y.m_bNaN)
-    return uintx_t::NaN;
-
-  uintx_t result(x);
-  const uint32_t n = std::min(x.m_nSize, y.m_nSize);
-  result.grow(n);
-
-  for(uint32_t i=0; i<n; i++)
-    result.m_pData[i] |= y.m_pData[i];
-
-  return result;
-} //operator|
-
-/// Bitwise XOR of two extensible unsigned integers.
-/// \param x A extensible unsigned integer.
-/// \param y A extensible unsigned integer
-/// \return x ORed with y.
-
-const uintx_t operator^(const uintx_t& x, const uintx_t& y){
-  if(x.m_bNaN || y.m_bNaN)
-    return uintx_t::NaN;
-
-  uintx_t result(x);
-  const uint32_t n = std::min(x.m_nSize, y.m_nSize);
-  result.grow(n);
-
-  for(uint32_t i=0; i<n; i++)
-    result.m_pData[i] ^= y.m_pData[i];
-
-  return result;
-} //operator^
-
-/// Bitwise negation of an extensible unsigned integer.
-/// \param x A extensible unsigned integer.
-/// \return x with all bits flipped.
-
-const uintx_t operator~(const uintx_t& x){
-  uintx_t result(x);
-
-  if(!result.m_bNaN)
-    for(uint32_t i=0; i<x.m_nSize; i++)
-      result.m_pData[i] = ~result.m_pData[i];
-
-  return result;
-} //operator~
-
-#pragma endregion bitwise
-
-/////////////////////////////////////////////////////////////////////////////
-// Multiplication operators.
-
-#pragma region multiplication
-
-/// Multiply two extensible unsigned integers.
-/// \param y A extensible unsigned integer.
-/// \param z A extensible unsigned integer
-/// \return y multiplied by z.
-
-const uintx_t operator*(const uintx_t& y, const uintx_t& z){ 
-  if(y.m_bNaN || z.m_bNaN)
-    return uintx_t::NaN;
-
-  uintx_t result(0); //place for returned result
-
-  uintx_t y0(y), z0(z); //local copies
-
-  while(z0 > 0){
-    result += y0*z0.m_pData[0];
-
-    y0 <<= BitsInWord;
-    z0 >>= BitsInWord;
-  } //while
-
-  return result;
-} //operator*
-
-/// Multiply a extensible unsigned integer by an integer.
-/// \param x A extensible unsigned integer.
-/// \param y An integer.
-/// \return x multiplied by y.
-
-const uintx_t operator*(const uintx_t& x, int32_t y){ 
-  if(y < 0)return uintx_t::NaN;
-  else return x*uint32_t(y);
-} //operator*
-
-/// Multiply a extensible unsigned integer by an unsigned integer.
-/// \param x A extensible unsigned integer.
-/// \param y An unsigned integer.
-/// \return x multiplied by y.
-
-const uintx_t operator*(const uintx_t& x, uint32_t y){ 
-  if(x.m_bNaN)
-    return uintx_t::NaN;
-
-  uintx_t word(0), carry(0);
-
-  word.grow(x.m_nSize);
-  carry.grow(x.m_nSize + 1);
-
-  for(uint32_t i=0; i<x.m_nSize; i++){
-    const uint64_t product = (uint64_t)x.m_pData[i]*(uint64_t)y;
-    carry.m_pData[i + 1] = uint32_t(product >> 32);
-    word.m_pData[i] = uint32_t(product & 0xFFFFFFFF);
-  } //for
-
-  word.normalize();
-  carry.normalize();
-
-  return word + carry;
-} //operator*
-
-/// Multiply an integer by a extensible unsigned integer.
-/// \param y An integer.
-/// \param x A extensible unsigned integer.
-/// \return x multiplied by y.
-
-const uintx_t operator*(int32_t y, const uintx_t& x){ 
-  if(y < 0)return uintx_t::NaN;
-  return x*y;
-} //operator*
-
-/// Multiply by a extensible unsigned integer.
-/// \param y A extensible unsigned integer.
-/// \return Reference to this extensible unsigned integer after multiplication by y.
-
-uintx_t& uintx_t::operator*=(const uintx_t& y){ 
-  return *this = (*this)*y;
-} //operator*=
-
-#pragma endregion multiplication
-
-/////////////////////////////////////////////////////////////////////////////
 // Subtraction operators.
 
 #pragma region subtraction
@@ -957,28 +362,6 @@ uintx_t& uintx_t::operator*=(const uintx_t& y){
 const uintx_t operator-(const uintx_t& x, const uintx_t& y){ 
   uintx_t result(x);
   return result -= y;
-} //operator-
-
-const uintx_t operator-(const uintx_t& x, uint32_t y){
-  uintx_t result(x);
-  return result -= y;
-} //operator-
-
-const uintx_t operator-(const uintx_t& x, int32_t y){
-  uintx_t result(x);
-
-  if(y < 0)result += -y;
-  else result -= y;
-
-  return result;
-} //operator-
-
-const uintx_t operator-(uint32_t y, const uintx_t& x){
-  return x - y;
-} //operator-
-
-const uintx_t operator-(int32_t y, const uintx_t& x){
-  return x - y;
 } //operator-
 
 /// Subtract a extensible unsigned integer.
@@ -1018,22 +401,446 @@ uintx_t& uintx_t::operator-=(const uintx_t& y){
   return *this;
 } //operator-=
 
-uintx_t& uintx_t::operator-=(uint32_t y){
-  (*this) -= uintx_t(int32_t(y));
-  return *this;
-} //operator-=
-
 #pragma endregion subtraction
+
+/////////////////////////////////////////////////////////////////////////////
+// Increment and decrement operators.
+
+#pragma region increment
+
+/// Prefix increment operator.
+/// \return Reference after increment.
+
+uintx_t& uintx_t::operator++(){
+  (*this) += 1;
+  return *this;
+} //operator++
+
+/// Post increment operator.
+/// \return Value before increment.
+
+uintx_t uintx_t::operator++(int){
+  uintx_t temp = *this;
+  ++*this;
+  return temp;
+} //operator++
+
+/// Prefix decrement operator.
+/// \return Reference after decrement.
+    
+uintx_t& uintx_t::operator--(){
+  (*this) -= 1;
+  return *this;
+} //operator--
+
+/// Post decrement operator.
+/// \return Value before decrement.
+
+uintx_t uintx_t::operator--(int){
+  uintx_t temp = *this;
+  --(*this);
+  return temp;
+} //operator--
+
+#pragma endregion increment
+
+/////////////////////////////////////////////////////////////////////////////
+// Comparison operators.
+
+#pragma region comparison
+
+/// Greater than test. Assumes that both operands are normalized.
+/// \param x First operand.
+/// \param y Second operand.
+/// \return true If the first operand is greater than the second.
+
+bool operator>(const uintx_t& x, const uintx_t& y){ 
+  if(x.m_bNaN)return false;
+  if(y.m_bNaN)return true;
+
+  if(x.m_nSize > y.m_nSize)return true; 
+  if(x.m_nSize < y.m_nSize)return false; 
+
+  //check m_pData
+  for(int32_t i=x.m_nSize-1; i>=0; i--)
+    if(x.m_pData[i] > y.m_pData[i])return true; 
+    else if(x.m_pData[i] < y.m_pData[i])return false; 
+
+  return false; //they're equal
+} //operator>
+
+/// Greater than or equal to test.
+/// \param x First operand.
+/// \param y Second operand.
+/// \return true If the first operand is greater than or equal to the second.
+
+bool operator>=(const uintx_t& x, const uintx_t& y){ 
+  if(y.m_bNaN)return true;
+  if(x.m_bNaN)return false;
+  if(x.m_nSize > y.m_nSize)return true; 
+  if(x.m_nSize < y.m_nSize)return false; 
+
+  //check m_pData
+  for(int32_t i=x.m_nSize-1; i>=0; i--)
+    if(x.m_pData[i] >y .m_pData[i])return true; //x>y
+    else if(x.m_pData[i] < y.m_pData[i])return false; //x<y
+
+  return true; //they're equal
+} //operator>=
+
+/// Less than test.
+/// \param x First operand.
+/// \param y Second operand.
+/// \return true If the first operand is less than the second.
+
+bool operator<(const uintx_t& x, const uintx_t& y){ 
+  return y > x;
+} //operator<
+
+/// Less than or equal to test.
+/// \param x First operand.
+/// \param y Second operand.
+/// \return true If the first operand is less than or equal to the second.
+
+bool operator<=(const uintx_t& x, const uintx_t& y){ 
+  return y >= x;
+} //operator<=
+
+/// Equality test.
+/// \param x First operand.
+/// \param y Second operand.
+/// \return true If the first operand is equal to the second.
+
+bool operator==(const uintx_t& x, const uintx_t& y){ 
+  if(x.m_nSize != y.m_nSize)
+    return false;
+
+  if(x.m_bNaN && y.m_bNaN)
+    return true;
+
+  if(x.m_bNaN || y.m_bNaN)
+    return false;
+
+  //check m_pData
+  for(int32_t i=x.m_nSize-1; i>=1; i--)
+    if(x.m_pData[i] != y.m_pData[i])
+      return false;
+  
+  if(x.m_pData[0] != y.m_pData[0])
+    return false;
+
+  return true; //they're equal
+} //operator==
+
+/// Inequality test.
+/// \param x First operand.
+/// \param y Second operand.
+/// \return true If the first operand is equal to the second.
+
+bool operator!=(const uintx_t& x, const uintx_t& y){ 
+  return !(x == y); 
+} //operator!=
+
+#pragma endregion comparison
+
+/////////////////////////////////////////////////////////////////////////////
+// Bit shift operators.
+
+#pragma region shift
+
+/// Left-shift operator.
+/// \param n Shift distance in bits.
+/// \return Reference after left-shifting.
+
+uintx_t& uintx_t::operator<<=(int32_t n){ 
+  if(n < 0)
+    return *this >>= -n;
+
+  if(*this > 0 && !m_bNaN){
+    int32_t oldsize = m_nSize; //save old m_nSize for later
+
+    //compute new number of bits - divide by BitsPerWord and round up
+    grow((this->bitcount() + n + BitsInWord - 1)/BitsInWord);
+
+    //shift by word
+    int32_t dest = m_nSize - 1; //copy destination
+    int32_t src = dest - n/BitsInWord; //copy source
+
+    while(src >= 0){ //until end of source
+      if(src < oldsize)
+        m_pData[dest] = m_pData[src]; //copy
+        dest--; src--; //move along
+    } //while
+
+    while(dest >= 0)
+      m_pData[dest--] = 0; //fill bottom with zeros
+
+    //shift within words
+    const uint32_t d = n%BitsInWord; //shift distance within words
+
+    if(d > 0)
+      for(dest=m_nSize - 1; dest>=0; --dest){
+        m_pData[dest] <<= d;
+        if(dest > 0)
+          m_pData[dest] = m_pData[dest] | (m_pData[dest - 1] >> (BitsInWord - d));
+      } //for
+  } //if
+
+  return *this;
+} //operator<<=
+
+/// Left-shift operator.
+/// \param x First operand.
+/// \param d Second operand.
+/// \return The first operand left-shifted by the second operand.
+
+const uintx_t operator<<(const uintx_t& x, int32_t d){ 
+  return uintx_t(x) <<= d;
+} //operator<<
+
+/// Right-shift operator.
+/// \param n Number of bits to right-shift by.
+/// \return Reference after right-shifting.
+
+uintx_t& uintx_t::operator>>=(const int32_t n){ 
+  if(n < 0)
+    return *this >>= -n;
+
+  if(!m_bNaN){
+    //uint32_t newsize = (this->bitcount() - n + BitsInWord - 1)/BitsInWord;
+    int32_t newsize = m_nSize - n/BitsInWord;
+
+    if(newsize <= 0)
+      *this = 0;
+
+    else{
+      //first shift by word
+      uint32_t dest = 0; //copy destination
+      uint32_t src = dest + n/BitsInWord; //copy source
+
+      if(dest != src)
+        while(src < m_nSize){ //until end of source
+          m_pData[dest] = m_pData[src]; //copy
+          m_pData[src] = 0; //zero out copied word
+          dest++; src++; //move along
+        } //while
+
+      //then shift within words
+      const uint32_t d = n%BitsInWord; //shift distance within words
+
+      if(d > 0)
+        for(dest=0; dest<newsize; dest++){
+          m_pData[dest] >>= d;
+          if(dest < m_nSize - 1)
+            m_pData[dest] = m_pData[dest] | (m_pData[dest + 1] << (BitsInWord - d));
+        } //for
+    } //else
+
+    for(uint32_t i=newsize; i<m_nSize; i++)
+      m_pData[i] = 0; //zero out unused portion
+
+    normalize(); //remove leading zero words
+  } //if
+
+  return *this;
+} //operator>>=
+
+/// Right-shift operator.
+/// \param x First operand.
+/// \param d Second operand.
+/// \return The first operand left-shifted by the second operand.
+
+const uintx_t operator>>(const uintx_t& x, int32_t d){ 
+  return uintx_t(x) >>= d;
+} //operator>>
+
+#pragma endregion shift
+
+/////////////////////////////////////////////////////////////////////////////
+// Logical operators.
+
+#pragma region bitwise
+
+/// Bitwise conjunction operator.
+/// \param y Operand.
+/// \return Reference after ANDing with operand.
+
+uintx_t& uintx_t::operator&=(const uintx_t& y){
+  if(y.m_bNaN)
+    m_bNaN = true;
+
+  if(!m_bNaN){
+    //const uint32_t n = std::min(m_nSize, y.m_nSize);
+    //grow(n);
+
+    for(uint32_t i=0; i<m_nSize; i++)
+      m_pData[i] &= y.m_pData[i];
+  } //if
+
+  normalize();
+
+  return *this;
+} //operator&=
+
+/// Bitwise conjunction operator.
+/// \param x First operand.
+/// \param y Second operand.
+/// \return The first operand ANDed with the second.
+
+const uintx_t operator&(const uintx_t& x, const uintx_t& y){
+  return uintx_t(x) &= y;
+} //operator&
+
+/// Bitwise disjunction operator.
+/// \param y Operand.
+/// \return Reference after ORing with operand.
+
+uintx_t& uintx_t::operator|=(const uintx_t& y){
+  if(y.m_bNaN)
+    m_bNaN = true;
+
+  if(!m_bNaN){
+    const uint32_t n = std::min(m_nSize, y.m_nSize);
+    grow(n);
+
+    for(uint32_t i=0; i<n; i++)
+      m_pData[i] |= y.m_pData[i];
+  } //if
+
+  return *this;
+} //operator|=
+
+/// Bitwise disjunction operator.
+/// \param x First operand.
+/// \param y Second operand.
+/// \return The first operand ORed with the second.
+
+const uintx_t operator|(const uintx_t& x, const uintx_t& y){
+  return uintx_t(x) |= y;
+} //operator|
+
+/// Bitwise exclusive-or operator.
+/// \param y Operand.
+/// \return Reference after XORing with operand.
+
+uintx_t& uintx_t::operator^=(const uintx_t& y){
+  if(y.m_bNaN)
+    m_bNaN = true;
+
+  if(!m_bNaN){
+    const uint32_t n = std::min(m_nSize, y.m_nSize);
+    grow(n);
+
+    for(uint32_t i=0; i<n; i++)
+      m_pData[i] ^= y.m_pData[i];
+  } //if
+
+  normalize();
+
+  return *this;
+} //operator^=
+
+/// Bitwise exclusive-or operator.
+/// \param x First operand.
+/// \param y Second operand.
+/// \return The first operand XORed with the second.
+
+const uintx_t operator^(const uintx_t& x, const uintx_t& y){
+  return uintx_t(x) ^= y;
+} //operator^
+
+/// Bitwise negation.
+/// \param x Operand.
+/// \return The operand with all bits flipped.
+
+const uintx_t operator~(const uintx_t& x){
+  uintx_t result(x);
+
+  if(!result.m_bNaN)
+    for(uint32_t i=0; i<x.m_nSize; i++)
+      result.m_pData[i] = ~result.m_pData[i];
+
+  result.normalize();
+
+  return result;
+} //operator~
+
+#pragma endregion bitwise
+
+/////////////////////////////////////////////////////////////////////////////
+// Multiplication operators.
+
+#pragma region multiplication
+
+/// Multiplication operator.
+/// \param y First operand.
+/// \param z Second operand.
+/// \return The first operand multiplied by the second.
+
+const uintx_t operator*(const uintx_t& y, const uintx_t& z){ 
+  if(y.m_bNaN || z.m_bNaN)
+    return uintx_t::NaN;
+
+  uintx_t result(0); //return result
+
+  if(y.m_nSize == 1 && z.m_nSize == 1)
+    result = to_uint64(y)*to_uint64(z);
+
+  else if(z.m_nSize == 1)
+    result = z*y;
+
+  else if(y.m_nSize == 1){  //special case, y is a single word and z is not
+    uintx_t word, carry(0);
+    const uint64_t y64 = to_uint64(y);
+
+    word.grow(z.m_nSize);
+    carry.grow(z.m_nSize + 1);
+
+    for(uint32_t i=0; i<z.m_nSize; i++){
+      const uint64_t product = (uint64_t)z.m_pData[i]*y64;
+      carry.m_pData[i + 1] = uint32_t(product >> 32);
+      word.m_pData[i] = uint32_t(product & 0xFFFFFFFF);
+    } //for
+
+    word.normalize();
+    carry.normalize();
+
+    result = word + carry;
+  } //if
+
+  else{ //general case, both operands have 2 or more words
+    uintx_t y0(y), z0(z); //local copies
+
+    while(z0 > 0){
+      result += uintx_t(y0*z0.m_pData[0]);
+
+      y0 <<= BitsInWord;
+      z0 >>= BitsInWord;
+    } //while
+  } //else
+
+  return result;
+} //operator*
+
+/// Multiplication operator.
+/// \param y Operand.
+/// \return Reference after multiplication by the second.
+
+uintx_t& uintx_t::operator*=(const uintx_t& y){ 
+  return *this = (*this)*y;
+} //operator*=
+
+#pragma endregion multiplication
 
 /////////////////////////////////////////////////////////////////////////////
 // Division and remainder operators.
 
 #pragma region division
 
-/// Divide a extensible unsigned integer by a extensible unsigned integer.
-/// \param y A extensible unsigned integer.
-/// \param z An unsigned integer.
-/// \return x divided by y, rounded down.
+/// Division operator, rounding down.
+/// \param y First operand.
+/// \param z Second operand.
+/// \return The first operand divided by the second.
 
 const uintx_t operator/(const uintx_t& y, const uintx_t& z){
   if(y.m_bNaN || z.m_bNaN)
@@ -1044,7 +851,7 @@ const uintx_t operator/(const uintx_t& y, const uintx_t& z){
   if(y >= z){
     uintx_t r(y), w(z);
 
-    w <<= y.bitcount() - z.bitcount();
+    w <<= ff1(y) - ff1(z);
 
     while(w <= y)
       w <<= 1;
@@ -1063,28 +870,18 @@ const uintx_t operator/(const uintx_t& y, const uintx_t& z){
   return q;
 } //operator/
 
-/// Divide a extensible unsigned integer by an unsigned integer.
-/// \param y A extensible unsigned integer.
-/// \param z An unsigned integer.
-/// \return y divided by z, rounded down.
-
-const uintx_t operator/(const uintx_t& y, uint32_t z){ 
-  return y/uintx_t(int32_t(z));
-} //operator/
-
-/// Divide by a extensible unsigned integer.
-/// \param y A extensible unsigned integer.
-/// \return Reference to this extensible unsigned integer after division.
+/// Division operator, rounding down.
+/// \param y Operand.
+/// \return Reference after division by the second.
 
 uintx_t& uintx_t::operator/=(const uintx_t& y){ 
   return *this = *this/y;
 } //operator/
 
-/// Remainder after dividing a extensible unsigned integer by a extensible
-/// unsigned integer.
-/// \param y A extensible unsigned integer.
-/// \param z A extensible unsigned integer.
-/// \return The remainder after y is divided by z.
+/// Remainder operator.
+/// \param y First operand.
+/// \param z Second operand.
+/// \return Remainder after the first operand if divided by the second.
 
 const uintx_t operator%(const uintx_t& y, const uintx_t& z){ 
   if(y.m_bNaN || z.m_bNaN)
@@ -1106,29 +903,44 @@ const uintx_t operator%(const uintx_t& y, const uintx_t& z){
   return result;
 } //operator%
 
-/// Remainder after dividing by a extensible unsigned integer.
-/// \param y A extensible unsigned integer.
-/// \return Reference to this extensible unsigned integer after remaindering.
+/// Remainder operator.
+/// \param y Operand.
+/// \return Reference after division by the operand.
 
 uintx_t& uintx_t::operator%=(const uintx_t& y){ 
   return *this = *this%y;
 } //operator%=
 
-///// Remainder after dividing a extensible unsigned integer by an unsigned integer.
-///// \param y A extensible unsigned integer.
-///// \param z An unsigned integer.
-///// \return The remainder after y is divided by z.
-//
-//const uintx_t operator%(const uintx_t& y, uint32_t z){ 
-//  return y%uintx_t(int32_t(z));
-//} //operator%
-
 #pragma endregion division
 
 /////////////////////////////////////////////////////////////////////////////
-// Type casts.
+// Miscellaneous.
 
-#pragma region typecast
+#pragma region miscellaneous
+
+/// Find the number of bits after the most significant non-zero bit. Returns
+/// -1 if the operand is zero or NaN.
+/// \param x Operand.
+/// \return The number of bits after the most significant bit in the operand.
+
+int32_t ff1(const uintx_t& x){
+  if(x == 0 || x.m_bNaN)return -1; //bad
+
+  uint32_t i = x.m_nSize - 1; //index of most significant word
+  uint32_t j = BitsInWord - 1; //index of most significant word
+
+  while((x.m_pData[i] & (1 << j)) == 0) //leading bit is zero
+    --j;
+
+  return BitsInWord*i + j;
+} //ff1
+
+#pragma endregion miscellaneous
+
+/////////////////////////////////////////////////////////////////////////////
+// Type conversions.
+
+#pragma region conversions
 
 /// Convert to a 32-bit unsigned integer from the least significant word.
 /// \param x Operand.
@@ -1189,6 +1001,7 @@ const std::string to_string16(uintx_t x){
 } //to_string16
 
 /// Convert to a decimal string.
+/// \param x Operand.
 /// \return std::string containing the operand in decimal notation.
 
 const std::string to_string(uintx_t x){  
@@ -1211,4 +1024,4 @@ const std::string to_string(uintx_t x){
   return s;
 } //to_string
 
-#pragma endregion typecast
+#pragma endregion conversions

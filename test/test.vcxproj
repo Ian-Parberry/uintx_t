@@ -151,10 +151,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Src\main.cpp" />
-    <ClCompile Include="Src\uintx_math.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Src\uintx_math.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

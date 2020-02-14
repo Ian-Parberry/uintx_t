@@ -1,5 +1,9 @@
 /// \file uintx_math.cpp
 /// \brief Implementation of some useful unsigned integer math functions.
+///
+/// These math functions don't require any special access to the inner workings
+/// of extensible unsigned integers - they just use uintx_t operators. Therefore,
+/// none of these functions need be a friend to uintx_t.
 
 #include <algorithm>
 #include "uintx_t.h"
@@ -9,8 +13,8 @@
 /// \param z Second operand.
 /// \return The first operand raised to the second.
 
-uintx_t power(uintx_t y, uintx_t z){  
-  uintx_t x = 1;
+uintx_t powerx(uintx_t y, uintx_t z){  
+  uintx_t x(1);
 
   while(z > 0){
     if((z & 1) == 1)
@@ -21,30 +25,29 @@ uintx_t power(uintx_t y, uintx_t z){
   } //while
 
   return x;
-} //power
+} //powerx
 
-/// Factorial computation.
-/// \param y First operand.
-/// \return y!
+/// Factorial.
+/// \param x Operand.
+/// \return Factorial of the operand.
 
-uintx_t factorial(uintx_t x){
-  uintx_t result = 1;
-  uintx_t temp = x;
+uintx_t factorialx(uintx_t x){
+  uintx_t y(1); //result
 
-  while(temp > 1){
-    result *= temp; 
-    --temp; 
+  while(x > 1){
+    y *= x; 
+    --x; 
   } //while
 
-  return result;
-} //factorial
+  return y;
+} //factorialx
 
-/// Greatest common divisor of two unsigned integers.
+/// Greatest common divisor.
 /// \param y First operand.
 /// \param z Second operand.
 /// \return Greatest common divisor of the operands.
 
-uintx_t gcd(uintx_t x, uintx_t y){
+uintx_t gcdx(uintx_t x, uintx_t y){
   if(x < y)
     std::swap(x, y); //the first one must be no smaller than the second
 
@@ -55,43 +58,17 @@ uintx_t gcd(uintx_t x, uintx_t y){
   } //while
 
   return y;
-} //gcd
+} //gcdx
 
-/// Make a mask that is all zeros except the least significant 1-bit.
-/// \param x The operand.
-/// \return \f$2^i\f$ for the smallest \f$i\f$ such that (\f$2^i\f$ & x) = 1.
-
-uintx_t first1mask(const uintx_t& x){
-  return x & ~(x - 1U);
-} //first1mask
-
-/// Find the index of the least significant 1-bit.
-/// \param x The operand.
-/// \return The smallest \f$i\f$ such that (\f$2^i\f$ & x) = 1.
-
-int32_t first1index(const uintx_t& x){
-  if(x == 0)return -1;
-
-  int32_t count = 0;
-  uintx_t mask(1);
-
-  while((x & mask) == 0){
-    mask <<= 1;
-    count++;
-  } //while
-
-  return count;
-} //first1index
-
-/// Fast computation of Fibonacci numbers using successive doubling, that is,
+/// Fibonacci numbers computed using successive doubling, that is,
 /// \f$F(2k) = F(k)(2F(k+1)-F(k)) and F(2k+1) = F(k+1)^2 + F(k)^2\f$.
-/// \param x The operand.
-/// \return The xth Fibonacci number.
+/// \param x The index of a Fibonacci number.
+/// \return The Fibonacci number with that index.
 
-uintx_t fib(const uintx_t& x){
+uintx_t fibx(const uintx_t& x){
 	uintx_t a = 0;
 	uintx_t b = 1;
-  uintx_t mask = first1mask(x);
+  uintx_t mask = uintx_t(1) << ff1(x); //most significant bit
 
 	while(mask > 0){
 		uintx_t d = a*(2*b - a);
@@ -110,16 +87,18 @@ uintx_t fib(const uintx_t& x){
 	} //while
 
 	return a;
-} //fib 
+} //fibx
 
 /// Square root.
 /// \param x The operand.
-/// \return The integer below the square root of the operand.
+/// \return The integer part of the square root of the operand.
 
-uintx_t sqrt(const uintx_t& x){
+uintx_t sqrtx(const uintx_t& x){
+  if(x == uintx_t::NaN)return x;
+
   //start by finding the most significant bit (msb) of the result.
 
-  uint32_t j = first1index(x)/2 + 1; 
+  int32_t j = ff1(x)/2 + 1; 
 
   uintx_t n = uintx_t(1) << j; //mask for msb of result
   uintx_t n2 = n << j; //mask for msb of result^2
@@ -129,8 +108,8 @@ uintx_t sqrt(const uintx_t& x){
   n >>= 1; //mask for next least significant bit of result
   n2 >>= 2;  //mask for next least significant bit of result^2
 
-  uintx_t m = n >> 1U; 
-  uintx_t m2 = n2 >> 2U; //m^2
+  uintx_t m = n >> 1; 
+  uintx_t m2 = n2 >> 2; //m^2
 
   uintx_t q = n | m;
   uintx_t q2 = n2 + ((n << (j - 1)) | m2); //q^2
@@ -150,4 +129,4 @@ uintx_t sqrt(const uintx_t& x){
   } //while
   
   return n;
-} //sqrt
+} //sqrtx

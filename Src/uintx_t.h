@@ -33,12 +33,9 @@ class uintx_t{
 
     ~uintx_t(); ///< Destructor
 
-    //assignment operators
+    //assignment operator
 
     uintx_t& operator=(const uintx_t&); ///< Assignment.
-    uintx_t& operator=(const int32_t); ///< Assignment.
-    uintx_t& operator=(const int64_t); ///< Assignment.
-    uintx_t& operator=(const std::string& s); ///< Assignment.
 
     //increment and decrement operators
 
@@ -53,77 +50,57 @@ class uintx_t{
     uintx_t& operator+=(const uintx_t&); ///< Add to.
     friend const uintx_t operator+(const uintx_t&, const uintx_t&); ///< Addition.
 
+    //subtraction operators
+    
+    uintx_t& operator-=(const uintx_t&); ///< Subtract from.
+    friend const uintx_t operator-(const uintx_t&, const uintx_t&); ///< Subtraction.
+
     //multiplication operators
 
     uintx_t& operator*=(const uintx_t&); ///< Multiply by.
     friend const uintx_t operator*(const uintx_t&, const uintx_t&); ///< Multiplication.
-    friend const uintx_t operator*(int32_t, const uintx_t&); ///< Multiplication.
-    friend const uintx_t operator*(const uintx_t&, int32_t); ///< Multiplication.
-    friend const uintx_t operator*(const uintx_t&, uint32_t); ///< Multiplication.
-    friend const uintx_t operator*(int32_t, const uintx_t&); ///< Multiplication.
-
-    //comparison operators
-
-    friend bool operator>(const uintx_t&, const uintx_t&); ///< Greater than.
-    friend bool operator>(const uintx_t&, uint32_t); ///< Greater than.
-    friend bool operator>(const uintx_t&, int32_t); ///< Greater than.
-
-    friend bool operator>=(const uintx_t&, const uintx_t&); ///< Greater than or equal.
-    friend bool operator>=(const uintx_t&, uint32_t); ///< Greater than or equal.
-    friend bool operator>=(const uintx_t&, int32_t); ///< Greater than or equal.
-
-    friend bool operator<(const uintx_t&, const uintx_t&); ///< Less than.
-    friend bool operator<(const uintx_t&, uint32_t); ///< Less than.
-    friend bool operator<(const uintx_t&, int32_t); ///< Less than.
-
-    friend bool operator<=(const uintx_t&, const uintx_t&); ///< Less than or equal.
-    friend bool operator<=(const uintx_t&, uint32_t); ///< Less than or equal.
-    friend bool operator<=(const uintx_t&, int32_t); ///< Less than or equal.
-
-    friend bool operator==(const uintx_t&, const uintx_t&); ///< Equal to.
-    friend bool operator==(const uintx_t&, uint32_t); ///< Equal to.
-    friend bool operator==(const uintx_t&, int32_t); ///< Equal to.
-
-    friend bool operator!=(const uintx_t&, const uintx_t&); ///< Not equal to.
-    friend bool operator!=(const uintx_t&, uint32_t); ///< Not equal to.
-    friend bool operator!=(const uintx_t&, int32_t); ///< Not equal to.
-
-    //bit shift operators
-
-    uintx_t& operator<<=(const uint32_t); ///< Left shift by.
-    friend const uintx_t operator<<(const uintx_t&, uint32_t); ///< Left shift.
-    friend const uintx_t operator<<(const uintx_t&, int32_t); ///< Left shift.
-
-    uintx_t& operator>>=(uint32_t); ///< Right shift by.
-    friend const uintx_t operator>>(const uintx_t&, uint32_t); ///< Right shift.
-    friend const uintx_t operator>>(const uintx_t&, int32_t); ///< Right shift.
-
-    //bitwise operators
-
-    friend const uintx_t operator&(const uintx_t&, const uintx_t&); ///< Bit-wise AND.
-    friend const uintx_t operator|(const uintx_t&, const uintx_t&); ///< Bit-wise OR.
-    friend const uintx_t operator^(const uintx_t&, const uintx_t&); ///< Bit-wise XOR.
-    friend const uintx_t operator~(const uintx_t&); ///< Bit-wise negation.
-
-    //subtraction operators
-    
-    uintx_t& operator-=(const uintx_t&); ///< Subtract from.
-    uintx_t& operator-=(uint32_t); ///< Subtract from.
-    friend const uintx_t operator-(const uintx_t&, const uintx_t&); ///< Subtraction.
-    friend const uintx_t operator-(uint32_t, const uintx_t&); ///< Subtraction.
-    friend const uintx_t operator-(int32_t, const uintx_t&); ///< Subtraction.
-    friend const uintx_t operator-(const uintx_t&, uint32_t); ///< Subtraction.
-    friend const uintx_t operator-(const uintx_t&, int32_t); ///< Subtraction.
 
     //division operators
 
     uintx_t& operator/=(const uintx_t&); ///< Divide by.
     friend const uintx_t operator/(const uintx_t&, const uintx_t&); ///< Division.
-    friend const uintx_t operator/(const uintx_t&, uint32_t); ///< Division.
 
     uintx_t& operator%=(const uintx_t&); ///< Remainder.
     friend const uintx_t operator%(const uintx_t&, const uintx_t&); ///< Remainder.
-    //friend const uintx_t operator%(const uintx_t&, uint32_t); ///< Remainder.
+
+    //comparison operators
+
+    friend bool operator>(const uintx_t&, const uintx_t&); ///< Greater than.
+    friend bool operator>=(const uintx_t&, const uintx_t&); ///< Greater than or equal.
+    friend bool operator<(const uintx_t&, const uintx_t&); ///< Less than.
+    friend bool operator<=(const uintx_t&, const uintx_t&); ///< Less than or equal.
+    friend bool operator==(const uintx_t&, const uintx_t&); ///< Equal to.
+    friend bool operator!=(const uintx_t&, const uintx_t&); ///< Not equal to.
+
+    //bit shift operators
+
+    uintx_t& operator<<=(const int32_t); ///< Left shift by.
+    friend const uintx_t operator<<(const uintx_t&, int32_t); ///< Left shift.
+
+    uintx_t& operator>>=(int32_t); ///< Right shift by.
+    friend const uintx_t operator>>(const uintx_t&, int32_t); ///< Right shift.
+
+    //bitwise operators
+    
+    uintx_t& operator&=(const uintx_t&); ///< Bit-wise AND.
+    friend const uintx_t operator&(const uintx_t&, const uintx_t&); ///< Bit-wise AND.
+    
+    uintx_t& operator|=(const uintx_t&); ///< Bit-wise OR.
+    friend const uintx_t operator|(const uintx_t&, const uintx_t&); ///< Bit-wise OR.
+    
+    uintx_t& operator^=(const uintx_t&); ///< Bit-wise XOR.
+    friend const uintx_t operator^(const uintx_t&, const uintx_t&); ///< Bit-wise XOR.
+
+    friend const uintx_t operator~(const uintx_t&); ///< Bit-wise negation.
+
+    //miscellaneous
+
+    friend int32_t ff1(const uintx_t&); ///< Find first one.
 
     //type conversions
 
@@ -134,7 +111,6 @@ class uintx_t{
 
     //constants
 
-    static const uintx_t Zero; ///< Zero.
     static const uintx_t NaN; ///< Not a number.
 }; //uintx_t
 

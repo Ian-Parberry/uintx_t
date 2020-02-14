@@ -138,9 +138,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Src\uintx_math.cpp" />
     <ClCompile Include="Src\uintx_t.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Src\uintx_math.h" />
     <ClInclude Include="Src\uintx_t.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
