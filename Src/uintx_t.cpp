@@ -6,9 +6,9 @@
 #include <cmath>
 #include <algorithm>
 
-const uint32_t HalfBytesInWord = 2*sizeof(uint32_t); ///< Number of nibbles in a word.
-const uint32_t BitsInHalfByte = 4; ///< Number of bits in a nibble.
-const uint32_t BitsInWord = 8*sizeof(uint32_t); ///< Number of bits in a word.
+const uint32_t NYBBLES = 2*sizeof(uint32_t); ///< Number of nybbles in a word.
+const uint32_t BITS = 4*NYBBLES; ///< Number of bits in a word.
+
 const uintx_t uintx_t::NaN(-1); ///< Extensible unsigned integer not-a-number.
 
 /////////////////////////////////////////////////////////////////////////////
@@ -79,12 +79,19 @@ uintx_t::uintx_t(int64_t i){
   } //else
 } //int64_t constructor
 
-/// String constructor.
-/// \param string String containing initial value in hexadecimal.
+/// String constructor. See loadstring() for string requirements.
+/// \param s String containing initial value in hexadecimal.
 
 uintx_t::uintx_t(const std::string& s){ 
   loadstring(s); //load string
 } //string constructor
+
+/// Null-terminated string constructor. See loadstring() for string requirements.
+/// \param s Null-terminated string containing initial value in hexadecimal.
+
+uintx_t::uintx_t(const char* s){ 
+  loadstring(std::string(s)); //load string
+} //null-terminated string constructor
 
 /// Copy constructor.
 /// \param x Extensible unsigned integer to be copied.
@@ -175,13 +182,13 @@ void uintx_t::normalize(){
 /// Set to a hex value contained in an std::string. Both lower-case and
 /// upper case letters are allowed. 0x at the start of the string is optional. 
 /// Gets set to NaN if there's an unexpected character in the string.
-/// \param string An std::string containing a hex value.
+/// \param s An std::string containing a hex value.
 
 void uintx_t::loadstring(const std::string& s){ 
   m_bNaN = false;  
   
   const size_t n = s.size();
-  const uint32_t nSize = (uint32_t)std::ceil((double)n/HalfBytesInWord);
+  const uint32_t nSize = (uint32_t)std::ceil((double)n/NYBBLES);
 
   if(nSize != m_nSize){
     delete [] m_pData;
@@ -194,8 +201,8 @@ void uintx_t::loadstring(const std::string& s){
   uint32_t word = m_nSize - 1; //current word in long integer
   const size_t digitcount = s.size(); //number of digits in string
 
-  uint32_t shift = (digitcount%HalfBytesInWord)*BitsInHalfByte; //shift within word
-  if(shift <= 0)shift = BitsInWord; //wrap shift amount
+  uint32_t shift = (digitcount%NYBBLES)*4; //shift within word
+  if(shift <= 0)shift = BITS; //wrap shift amount
 
   const size_t i0 = (n >= 2 && s[0] == '0' && s[1] == 'x')? 2: 0; //skip 0x if present
   m_bNaN = false; //optimistically we believe that this is a number
@@ -220,21 +227,21 @@ void uintx_t::loadstring(const std::string& s){
 
     if(!m_bNaN){
       if(shift <= 0){
-        shift = BitsInWord;
+        shift = BITS;
         word--;
       } //if
 
-      shift = shift - BitsInHalfByte;
+      shift = shift - 4;
       m_pData[word] = m_pData[word] | (digit<<shift);
     } //if
   } //for
 } //loadstring
 
 /// Compute the number of significant bits in the value stored.
-/// \return the number of bits stored.
+/// \return The number of bits stored.
 
-const uint32_t uintx_t::bitcount() const{
-  if(m_bNaN || m_nSize <= 0)return 0;
+const uint32_t uintx_t::bitsize() const{
+  if(m_bNaN || m_nSize <= 0)return 1;
 
   uint32_t word = m_pData[m_nSize - 1]; //most significant word in x
   uint32_t count = 0; //counter
@@ -244,8 +251,8 @@ const uint32_t uintx_t::bitcount() const{
     count++;
   } //while
 
-  return count + (m_nSize - 1)*BitsInWord;
-} //bitcount
+  return count + (m_nSize - 1)*BITS;
+} //bitsize
 
 #pragma endregion general
 
@@ -299,7 +306,7 @@ uintx_t& uintx_t::operator+=(const uintx_t& y){
     uint32_t sum, sum_msb; //sum and its msb
     uint32_t carry = 0; //single-bit carry
 
-    const uint32_t mask_msb = 1 << (BitsInWord-1); //mask for most significant bit
+    const uint32_t mask_msb = 1 << (BITS-1); //mask for most significant bit
     const uint32_t mask_lsb = ~mask_msb; //mask for all but most significant bit
 
     uint32_t i; //looping variable
@@ -313,8 +320,8 @@ uintx_t& uintx_t::operator+=(const uintx_t& y){
       right = i < y.m_nSize? y.m_pData[i]: 0;
 
       //extract the most significant bit (msb) from each
-      left_msb = (left & mask_msb) >> (BitsInWord - 1);
-      right_msb = (right & mask_msb) >> (BitsInWord - 1);
+      left_msb = (left & mask_msb) >> (BITS - 1);
+      right_msb = (right & mask_msb) >> (BITS - 1);
 
       //zero out the msb from each
       left = left & mask_lsb;
@@ -324,7 +331,7 @@ uintx_t& uintx_t::operator+=(const uintx_t& y){
       sum = left + right + carry;
 
       //compute carry
-      sum_msb = (sum & mask_msb) >> (BitsInWord - 1);
+      sum_msb = (sum & mask_msb) >> (BITS - 1);
       sum = sum & mask_lsb;
       carry = left_msb + right_msb + sum_msb; //carry is either 0, 1, 2, or 3 here
 
@@ -560,11 +567,11 @@ uintx_t& uintx_t::operator<<=(int32_t n){
     int32_t oldsize = m_nSize; //save old m_nSize for later
 
     //compute new number of bits - divide by BitsPerWord and round up
-    grow((this->bitcount() + n + BitsInWord - 1)/BitsInWord);
+    grow((this->bitsize() + n + BITS - 1)/BITS);
 
     //shift by word
     int32_t dest = m_nSize - 1; //copy destination
-    int32_t src = dest - n/BitsInWord; //copy source
+    int32_t src = dest - n/BITS; //copy source
 
     while(src >= 0){ //until end of source
       if(src < oldsize)
@@ -576,13 +583,13 @@ uintx_t& uintx_t::operator<<=(int32_t n){
       m_pData[dest--] = 0; //fill bottom with zeros
 
     //shift within words
-    const uint32_t d = n%BitsInWord; //shift distance within words
+    const uint32_t d = n%BITS; //shift distance within words
 
     if(d > 0)
       for(dest=m_nSize - 1; dest>=0; --dest){
         m_pData[dest] <<= d;
         if(dest > 0)
-          m_pData[dest] = m_pData[dest] | (m_pData[dest - 1] >> (BitsInWord - d));
+          m_pData[dest] = m_pData[dest] | (m_pData[dest - 1] >> (BITS - d));
       } //for
   } //if
 
@@ -607,8 +614,8 @@ uintx_t& uintx_t::operator>>=(const int32_t n){
     return *this >>= -n;
 
   if(!m_bNaN){
-    //uint32_t newsize = (this->bitcount() - n + BitsInWord - 1)/BitsInWord;
-    int32_t newsize = m_nSize - n/BitsInWord;
+    //uint32_t newsize = (this->bitsize() - n + BITS - 1)/BITS;
+    uint32_t newsize = m_nSize - n/BITS;
 
     if(newsize <= 0)
       *this = 0;
@@ -616,7 +623,7 @@ uintx_t& uintx_t::operator>>=(const int32_t n){
     else{
       //first shift by word
       uint32_t dest = 0; //copy destination
-      uint32_t src = dest + n/BitsInWord; //copy source
+      uint32_t src = dest + n/BITS; //copy source
 
       if(dest != src)
         while(src < m_nSize){ //until end of source
@@ -626,13 +633,13 @@ uintx_t& uintx_t::operator>>=(const int32_t n){
         } //while
 
       //then shift within words
-      const uint32_t d = n%BitsInWord; //shift distance within words
+      const uint32_t d = n%BITS; //shift distance within words
 
       if(d > 0)
         for(dest=0; dest<newsize; dest++){
           m_pData[dest] >>= d;
           if(dest < m_nSize - 1)
-            m_pData[dest] = m_pData[dest] | (m_pData[dest + 1] << (BitsInWord - d));
+            m_pData[dest] = m_pData[dest] | (m_pData[dest + 1] << (BITS - d));
         } //for
     } //else
 
@@ -814,8 +821,8 @@ const uintx_t operator*(const uintx_t& y, const uintx_t& z){
     while(z0 > 0){
       result += uintx_t(y0*z0.m_pData[0]);
 
-      y0 <<= BitsInWord;
-      z0 >>= BitsInWord;
+      y0 <<= BITS;
+      z0 >>= BITS;
     } //while
   } //else
 
@@ -851,7 +858,7 @@ const uintx_t operator/(const uintx_t& y, const uintx_t& z){
   if(y >= z){
     uintx_t r(y), w(z);
 
-    w <<= ff1(y) - ff1(z);
+    w <<= y.bitsize() - z.bitsize();
 
     while(w <= y)
       w <<= 1;
@@ -914,30 +921,6 @@ uintx_t& uintx_t::operator%=(const uintx_t& y){
 #pragma endregion division
 
 /////////////////////////////////////////////////////////////////////////////
-// Miscellaneous.
-
-#pragma region miscellaneous
-
-/// Find the number of bits after the most significant non-zero bit. Returns
-/// -1 if the operand is zero or NaN.
-/// \param x Operand.
-/// \return The number of bits after the most significant bit in the operand.
-
-int32_t ff1(const uintx_t& x){
-  if(x == 0 || x.m_bNaN)return -1; //bad
-
-  uint32_t i = x.m_nSize - 1; //index of most significant word
-  uint32_t j = BitsInWord - 1; //index of most significant word
-
-  while((x.m_pData[i] & (1 << j)) == 0) //leading bit is zero
-    --j;
-
-  return BitsInWord*i + j;
-} //ff1
-
-#pragma endregion miscellaneous
-
-/////////////////////////////////////////////////////////////////////////////
 // Type conversions.
 
 #pragma region conversions
@@ -952,7 +935,7 @@ const uint32_t to_uint32(uintx_t x){
   else return x.m_pData[0];
 } //to_uint32
 
-/// Construct a 64-bit unsigned integer from the two least-significant words.
+/// Convert to a 64-bit unsigned integer from the two least-significant words.
 /// \param x Operand.
 /// \return Least significant 64 bits of the operand.
 
@@ -962,11 +945,43 @@ const uint64_t to_uint64(uintx_t x){
   return (uint64_t(x.m_pData[1]) << 32) | uint64_t(x.m_pData[0]);
 } //to_uint64
 
+/// Convert to a single-precision floating point number. Note that floats
+/// can only store numbers up to approximately \f$3.4 \times 10^{38)\f$,
+/// so anything larger than that will be inf.
+/// \param x Operand.
+/// \return A float that is approximately equal to the operand.
+
+const float to_float(uintx_t x){
+  const float m = float(1LL << 32); //multiplier
+  float result = 0; //return result
+
+  for(int32_t i=x.m_nSize-1; i>=0; i--)
+    result = result*m + float(x.m_pData[i]);
+
+  return result;
+} //to_float
+
+/// Convert to a double-precision floating point number. Note that doubles
+/// can only store numbers up to approximately \f$1.8 \times 10^{308)\f$,
+/// so anything larger than that will be inf.
+/// \param x Operand.
+/// \return A double that is approximately equal to the operand.
+
+const double to_double(uintx_t x){
+  const double m = double(1LL << 32); //multiplier
+  double result = 0; //return result
+
+  for(int32_t i=x.m_nSize-1; i>=0; i--)
+    result = result*m + double(x.m_pData[i]);
+
+  return result;
+} //to_double
+
 /// Convert to a hexadecimal string with "0x" at the front.
 /// \param x Operand.
 /// \return std::string containing the operand in hexadecimal notation.
 
-const std::string to_string16(uintx_t x){  
+const std::string to_hexstring(uintx_t x){  
   if(x.m_bNaN)return std::string("NaN");
   std::string s; //result
 
@@ -998,7 +1013,7 @@ const std::string to_string16(uintx_t x){
 
   std::reverse(s.begin(), s.end());
   return s;
-} //to_string16
+} //to_hexstring
 
 /// Convert to a decimal string.
 /// \param x Operand.
@@ -1023,5 +1038,21 @@ const std::string to_string(uintx_t x){
   std::reverse(s.begin(), s.end());
   return s;
 } //to_string
+
+/// Convert to a comma-separated decimal string.
+/// \param x Operand.
+/// \return std::string containing the operand in decimal notation with commas.
+
+const std::string to_commastring(uintx_t x){  
+  if(x.m_bNaN)return std::string("NaN");
+
+  std::string s = to_string(x); //result
+  const int32_t n = (int32_t)s.length() - 3; //position of first comma
+
+  for(int32_t i=n; i>0; i-=3) //every third character
+    s.insert(i, ","); //insert a comma
+
+  return s;
+} //to_commastring
 
 #pragma endregion conversions

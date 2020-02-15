@@ -8,19 +8,26 @@
 
 /// \brief The extensible unsigned integer class.
 ///
-/// An extensible unsigned integer can have arbitrary length.
+/// Extensible unsigned integers store very large numbers as an array of
+/// 32-bit words, least-significant first. Precision is limited by the amount
+/// of memory that can be allocated, potentially up to
+/// \f$2^{32} = 4,294,967,296\f$ 32-bit words, that is, 
+/// \f$2^{37} = 137,438,953,472\f$ bits. All non-zero extensible unsigned
+/// integers have a non-zero most-significant word. The amount of storage used
+/// adjusts automatically. Any function or operation that results in a
+/// negative number will return NaN (Not a Number), as will any function or 
+/// operation that acts on NaN.
 
 class uintx_t{ 
   private:
-    uint32_t* m_pData = nullptr; ///< Array of 32-bit words, least significant first.
+    uint32_t* m_pData = nullptr; ///< Array of 32-bit words.
     uint32_t m_nSize = 0; ///< Number of words in m_pData.
     bool m_bNaN = false; ///< Not a number.
 
     void loadstring(const std::string&); ///< Load hex string.
-    void reallocate(const uint32_t s); ///< Reallocate space for s words.
-    void grow(const uint32_t s); ///< Grow space for s words.
+    void reallocate(const uint32_t); ///< Reallocate space.
+    void grow(const uint32_t); ///< Grow space.
     void normalize(); ///< Remove leading zero words.
-    const uint32_t bitcount() const; ///< Number of bits.
 
   public:
     uintx_t(); ///< Constructor.
@@ -29,9 +36,12 @@ class uintx_t{
     uintx_t(uint32_t); ///< Constructor.
     uintx_t(uint64_t); ///< Constructor.
     uintx_t(const std::string&); ///< Constructor.
+    uintx_t(const char*); ///< Constructor.
     uintx_t(const uintx_t&); ///< Copy constructor.
 
     ~uintx_t(); ///< Destructor
+
+    const uint32_t bitsize() const; ///< Number of bits.
 
     //assignment operator
 
@@ -98,16 +108,16 @@ class uintx_t{
 
     friend const uintx_t operator~(const uintx_t&); ///< Bit-wise negation.
 
-    //miscellaneous
-
-    friend int32_t ff1(const uintx_t&); ///< Find first one.
-
     //type conversions
 
-    friend const std::string to_string16(uintx_t x); ///< Convert to hex string.
-    friend const std::string to_string(uintx_t x); ///< Convert to decimal string.
-    friend const uint32_t to_uint32(uintx_t x); ///< Convert to 32-bit unsigned int.
-    friend const uint64_t to_uint64(uintx_t x); ///< Convert to 32-bit unsigned int.
+    friend const std::string to_hexstring(uintx_t x); ///< To hex string.
+    friend const std::string to_string(uintx_t x); ///<To decimal string.
+    friend const std::string to_commastring(uintx_t x); ///<To comma separated string.
+
+    friend const uint32_t to_uint32(uintx_t x); ///< To 32-bit unsigned int.
+    friend const uint64_t to_uint64(uintx_t x); ///< To 64-bit unsigned int.
+    friend const float to_float(uintx_t x); ///< To single precision floating point.
+    friend const double to_double(uintx_t x); ///< To double precision floating point.
 
     //constants
 

@@ -8,7 +8,7 @@
 #include <algorithm>
 #include "uintx_t.h"
 
-/// Raise an unsigned integer to the power of another.
+/// Raise an extensible unsigned integer to the power of another.
 /// \param y First operand.
 /// \param z Second operand.
 /// \return The first operand raised to the second.
@@ -27,7 +27,7 @@ uintx_t powerx(uintx_t y, uintx_t z){
   return x;
 } //powerx
 
-/// Factorial.
+/// Compute the factorial of an extensible unsigned integer.
 /// \param x Operand.
 /// \return Factorial of the operand.
 
@@ -42,14 +42,17 @@ uintx_t factorialx(uintx_t x){
   return y;
 } //factorialx
 
-/// Greatest common divisor.
-/// \param y First operand.
-/// \param z Second operand.
+/// Find treatest common divisor of two an extensible unsigned integers
+/// using Euclid's Algorithm.
+/// \param x First operand.
+/// \param y Second operand.
 /// \return Greatest common divisor of the operands.
 
 uintx_t gcdx(uintx_t x, uintx_t y){
-  if(x < y)
-    std::swap(x, y); //the first one must be no smaller than the second
+  if(x == uintx_t::NaN || y == uintx_t::NaN)return uintx_t::NaN; //not a number
+
+  if(x < y)std::swap(x, y); //x must be no smaller than y
+  if(y == 0)return 0; //special case
 
   while(x != 0){
     const uintx_t temp = x;
@@ -60,15 +63,16 @@ uintx_t gcdx(uintx_t x, uintx_t y){
   return y;
 } //gcdx
 
-/// Fibonacci numbers computed using successive doubling, that is,
-/// \f$F(2k) = F(k)(2F(k+1)-F(k)) and F(2k+1) = F(k+1)^2 + F(k)^2\f$.
+/// Fibonacci numbers computed using successive doubling, that is, using
+/// the recurrences \f$F(0) = F(1) = 0\f$ and for all \f$k \geq 1\f$,
+/// \f[F(2k) = F(k)(2F(k+1)-F(k))\f] \f[F(2k+1) = F(k+1)^2 + F(k)^2\f].
 /// \param x The index of a Fibonacci number.
 /// \return The Fibonacci number with that index.
 
 uintx_t fibx(const uintx_t& x){
 	uintx_t a = 0;
 	uintx_t b = 1;
-  uintx_t mask = uintx_t(1) << ff1(x); //most significant bit
+  uintx_t mask = uintx_t(1) << (x.bitsize() - 1); //most significant bit
 
 	while(mask > 0){
 		uintx_t d = a*(2*b - a);
@@ -89,16 +93,16 @@ uintx_t fibx(const uintx_t& x){
 	return a;
 } //fibx
 
-/// Square root.
+/// Find the floor of the square root of an extensible unsigned integer.
 /// \param x The operand.
-/// \return The integer part of the square root of the operand.
+/// \return Floor of the square root of the operand.
 
 uintx_t sqrtx(const uintx_t& x){
   if(x == uintx_t::NaN)return x;
 
   //start by finding the most significant bit (msb) of the result.
 
-  int32_t j = ff1(x)/2 + 1; 
+  int32_t j = (x.bitsize() - 1)/2 + 1; 
 
   uintx_t n = uintx_t(1) << j; //mask for msb of result
   uintx_t n2 = n << j; //mask for msb of result^2
