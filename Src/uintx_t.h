@@ -41,7 +41,7 @@ class uintx_t{
 
     ~uintx_t(); ///< Destructor
 
-    const uint32_t bitsize() const; ///< Number of bits.
+    const uint32_t log2() const; ///< Floor of log base 2.
 
     //assignment operator
 

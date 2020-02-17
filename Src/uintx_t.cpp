@@ -240,7 +240,7 @@ void uintx_t::loadstring(const std::string& s){
 /// Compute the number of significant bits in the value stored.
 /// \return The number of bits stored.
 
-const uint32_t uintx_t::bitsize() const{
+const uint32_t uintx_t::log2() const{
   if(m_bNaN || m_nSize <= 0)return 1;
 
   uint32_t word = m_pData[m_nSize - 1]; //most significant word in x
@@ -252,7 +252,7 @@ const uint32_t uintx_t::bitsize() const{
   } //while
 
   return count + (m_nSize - 1)*BITS;
-} //bitsize
+} //log2
 
 #pragma endregion general
 
@@ -567,7 +567,7 @@ uintx_t& uintx_t::operator<<=(int32_t n){
     int32_t oldsize = m_nSize; //save old m_nSize for later
 
     //compute new number of bits - divide by BitsPerWord and round up
-    grow((this->bitsize() + n + BITS - 1)/BITS);
+    grow((log2() + n + BITS - 1)/BITS);
 
     //shift by word
     int32_t dest = m_nSize - 1; //copy destination
@@ -850,7 +850,7 @@ uintx_t& uintx_t::operator*=(const uintx_t& y){
 /// \return The first operand divided by the second.
 
 const uintx_t operator/(const uintx_t& y, const uintx_t& z){
-  if(y.m_bNaN || z.m_bNaN)
+  if(y.m_bNaN || z.m_bNaN || z > y)
     return uintx_t::NaN;
 
   uintx_t q(0); //result
@@ -858,7 +858,7 @@ const uintx_t operator/(const uintx_t& y, const uintx_t& z){
   if(y >= z){
     uintx_t r(y), w(z);
 
-    w <<= y.bitsize() - z.bitsize();
+    w <<= y.log2() - z.log2();
 
     while(w <= y)
       w <<= 1;

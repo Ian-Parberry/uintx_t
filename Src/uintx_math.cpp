@@ -72,7 +72,7 @@ uintx_t gcdx(uintx_t x, uintx_t y){
 uintx_t fibx(const uintx_t& x){
 	uintx_t a = 0;
 	uintx_t b = 1;
-  uintx_t mask = uintx_t(1) << (x.bitsize() - 1); //most significant bit
+  uintx_t mask = uintx_t(1) << (x.log2() - 1); //most significant bit
 
 	while(mask > 0){
 		uintx_t d = a*(2*b - a);
@@ -102,7 +102,7 @@ uintx_t sqrtx(const uintx_t& x){
 
   //start by finding the most significant bit (msb) of the result.
 
-  int32_t j = (x.bitsize() - 1)/2 + 1; 
+  int32_t j = (x.log2() - 1)/2 + 1; 
 
   uintx_t n = uintx_t(1) << j; //mask for msb of result
   uintx_t n2 = n << j; //mask for msb of result^2
