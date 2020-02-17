@@ -2,65 +2,77 @@
 /// \brief Implementation of some useful unsigned integer math functions.
 ///
 /// These math functions don't require any special access to the inner workings
-/// of extensible unsigned integers - they just use uintx_t operators. Therefore,
-/// none of these functions need be a friend to uintx_t.
+/// of extensible unsigned integers. They just use uintx_t operators, which
+/// means that none of them need be a friend to uintx_t.
 
 #include <algorithm>
 #include "uintx_t.h"
 
-/// Raise an extensible unsigned integer to the power of another.
+/// Raise an extensible unsigned integer to the power of another using
+/// successive doubling.
 /// \param y First operand.
 /// \param z Second operand.
-/// \return The first operand raised to the second.
+/// \return The first operand raised to the power of the second.
 
-uintx_t powerx(uintx_t y, uintx_t z){  
-  uintx_t x(1);
+const uintx_t powerx(const uintx_t& y, const uintx_t& z){  
+  uintx_t x(1), q(y), r(z);
 
-  while(z > 0){
-    if((z & 1) == 1)
-      x *= y;
+  while(r > 0){
+    if((r & 1) == 1)
+      x *= q;
 
-    z >>= 1; 
-    y *= y;
+    r >>= 1; 
+    q *= q;
   } //while
 
   return x;
 } //powerx
 
-/// Compute the factorial of an extensible unsigned integer.
+/// Square an extensible unsigned integer.
+/// \param x Operand.
+/// \return The operand squared.
+
+const uintx_t sqrx(const uintx_t& x){
+  return x*x;
+} //sqrx
+
+/// Compute the factorial of an extensible unsigned integer using the naive
+/// algorithm. Yes, I know that there are faster algorithms.
 /// \param x Operand.
 /// \return Factorial of the operand.
 
-uintx_t factorialx(uintx_t x){
-  uintx_t y(1); //result
+const uintx_t factorialx(const uintx_t& x){
+  uintx_t y(x), z(1); 
 
-  while(x > 1){
-    y *= x; 
-    --x; 
+  while(y > 1){
+    z *= y; 
+    --y; 
   } //while
 
-  return y;
+  return z;
 } //factorialx
 
 /// Find treatest common divisor of two an extensible unsigned integers
-/// using Euclid's Algorithm.
+/// using Euclid's Algorithm.  Yes, I know that there are faster algorithms.
 /// \param x First operand.
 /// \param y Second operand.
 /// \return Greatest common divisor of the operands.
 
-uintx_t gcdx(uintx_t x, uintx_t y){
-  if(x == uintx_t::NaN || y == uintx_t::NaN)return uintx_t::NaN; //not a number
+const uintx_t gcdx(const uintx_t& x, const uintx_t& y){
+  if(x == uintx_t::NaN || y == uintx_t::NaN) //not a number
+    return uintx_t::NaN;
 
-  if(x < y)std::swap(x, y); //x must be no smaller than y
-  if(y == 0)return 0; //special case
+  uintx_t w(x), z(y); //copies of parameters
 
-  while(x != 0){
-    const uintx_t temp = x;
-    x = y%x; 
-    y = temp;
+  //Euclid's algorithm
+
+  while(w != 0){
+    const uintx_t temp = w;
+    w = z%w; 
+    z = temp;
   } //while
 
-  return y;
+  return z;
 } //gcdx
 
 /// Fibonacci numbers computed using successive doubling, that is, using
@@ -69,10 +81,10 @@ uintx_t gcdx(uintx_t x, uintx_t y){
 /// \param x The index of a Fibonacci number.
 /// \return The Fibonacci number with that index.
 
-uintx_t fibx(const uintx_t& x){
+const uintx_t fibx(const uintx_t& x){
 	uintx_t a = 0;
 	uintx_t b = 1;
-  uintx_t mask = uintx_t(1) << (x.log2() - 1); //most significant bit
+  uintx_t mask = uintx_t(1) << (log2x(x) - 1); //most significant bit
 
 	while(mask > 0){
 		uintx_t d = a*(2*b - a);
@@ -97,12 +109,12 @@ uintx_t fibx(const uintx_t& x){
 /// \param x The operand.
 /// \return Floor of the square root of the operand.
 
-uintx_t sqrtx(const uintx_t& x){
+const uintx_t sqrtx(const uintx_t& x){
   if(x == uintx_t::NaN)return x;
 
   //start by finding the most significant bit (msb) of the result.
 
-  int32_t j = (x.log2() - 1)/2 + 1; 
+  int32_t j = (log2x(x) - 1)/2 + 1; 
 
   uintx_t n = uintx_t(1) << j; //mask for msb of result
   uintx_t n2 = n << j; //mask for msb of result^2

@@ -15,13 +15,14 @@
 /// \f$2^{37} = 137,438,953,472\f$ bits. All non-zero extensible unsigned
 /// integers have a non-zero most-significant word. The amount of storage used
 /// adjusts automatically. Any function or operation that results in a
-/// negative number will return NaN (Not a Number), as will any function or 
-/// operation that acts on NaN.
+/// negative number will return NaN (Not a Number), as will division by zero
+/// and any function or operation that acts on NaN.
 
 class uintx_t{ 
   private:
     uint32_t* m_pData = nullptr; ///< Array of 32-bit words.
-    uint32_t m_nSize = 0; ///< Number of words in m_pData.
+    uint32_t m_nSize = 0; ///< Number of significant words in m_pData.
+
     bool m_bNaN = false; ///< Not a number.
 
     void loadstring(const std::string&); ///< Load hex string.
@@ -41,7 +42,7 @@ class uintx_t{
 
     ~uintx_t(); ///< Destructor
 
-    const uint32_t log2() const; ///< Floor of log base 2.
+    //const uint32_t log2() const; ///< Floor of log base 2.
 
     //assignment operator
 
@@ -108,16 +109,20 @@ class uintx_t{
 
     friend const uintx_t operator~(const uintx_t&); ///< Bit-wise negation.
 
+    //miscellaneous
+
+    friend const uint32_t log2x(const uintx_t&); ///< Floor of log base 2.
+
     //type conversions
 
-    friend const std::string to_hexstring(uintx_t x); ///< To hex string.
-    friend const std::string to_string(uintx_t x); ///<To decimal string.
-    friend const std::string to_commastring(uintx_t x); ///<To comma separated string.
+    friend const std::string to_hexstring(const uintx_t& x); ///< To hex string.
+    friend const std::string to_string(const uintx_t& x); ///<To decimal string.
+    friend const std::string to_commastring(const uintx_t& x); ///<To comma separated string.
 
-    friend const uint32_t to_uint32(uintx_t x); ///< To 32-bit unsigned int.
-    friend const uint64_t to_uint64(uintx_t x); ///< To 64-bit unsigned int.
-    friend const float to_float(uintx_t x); ///< To single precision floating point.
-    friend const double to_double(uintx_t x); ///< To double precision floating point.
+    friend const uint32_t to_uint32(const uintx_t& x); ///< To 32-bit unsigned int.
+    friend const uint64_t to_uint64(const uintx_t& x); ///< To 64-bit unsigned int.
+    friend const float to_float(const uintx_t& x); ///< To single precision floating point.
+    friend const double to_double(const uintx_t& x); ///< To double precision floating point.
 
     //constants
 

@@ -115,9 +115,9 @@ uintx_t::~uintx_t(){
 #pragma endregion structors
 
 /////////////////////////////////////////////////////////////////////////////
-// General purpose functions.
+// Memory allocation functions.
 
-#pragma region general
+#pragma region memory
 
 /// Change the number of words allocated and zero out the value stored.
 /// \param size Number of words to allocate.
@@ -179,6 +179,13 @@ void uintx_t::normalize(){
   } //if
 } //normalize
 
+#pragma endregion memory
+
+/////////////////////////////////////////////////////////////////////////////
+// Helper functions.
+
+#pragma region helpers
+
 /// Set to a hex value contained in an std::string. Both lower-case and
 /// upper case letters are allowed. 0x at the start of the string is optional. 
 /// Gets set to NaN if there's an unexpected character in the string.
@@ -192,6 +199,7 @@ void uintx_t::loadstring(const std::string& s){
 
   if(nSize != m_nSize){
     delete [] m_pData;
+    m_nSize = nSize;
     m_pData = new uint32_t[m_nSize]; //grab space
   } //if
 
@@ -237,13 +245,16 @@ void uintx_t::loadstring(const std::string& s){
   } //for
 } //loadstring
 
-/// Compute the number of significant bits in the value stored.
-/// \return The number of bits stored.
+#pragma endregion helpers
 
-const uint32_t uintx_t::log2() const{
-  if(m_bNaN || m_nSize <= 0)return 1;
+/// Log base 2 function for extensible unsigned integers.
+/// \param x Operand.
+/// \return Floor of the square root of the operand.
 
-  uint32_t word = m_pData[m_nSize - 1]; //most significant word in x
+const uint32_t log2x(const uintx_t& x){
+  if(x.m_bNaN || x.m_nSize <= 0)return 1;
+
+  uint32_t word = x.m_pData[x.m_nSize - 1]; //most significant word in x
   uint32_t count = 0; //counter
 
   while(word > 0){
@@ -251,10 +262,8 @@ const uint32_t uintx_t::log2() const{
     count++;
   } //while
 
-  return count + (m_nSize - 1)*BITS;
-} //log2
-
-#pragma endregion general
+  return count + (x.m_nSize - 1)*BITS;
+} //log2x
 
 /////////////////////////////////////////////////////////////////////////////
 //Assignment operators.
@@ -380,7 +389,7 @@ uintx_t& uintx_t::operator-=(const uintx_t& y){
     m_bNaN = true;
 
   if(!m_bNaN){
-    if(y >= *this)
+    if(y > *this)
       m_bNaN = true; //subtracting something too big
 
     else if(y > 0U){
@@ -563,11 +572,14 @@ uintx_t& uintx_t::operator<<=(int32_t n){
   if(n < 0)
     return *this >>= -n;
 
+  if(n == 0)
+    return *this;
+
   if(*this > 0 && !m_bNaN){
     int32_t oldsize = m_nSize; //save old m_nSize for later
 
     //compute new number of bits - divide by BitsPerWord and round up
-    grow((log2() + n + BITS - 1)/BITS);
+    grow((log2x(*this) + n + BITS - 1)/BITS);
 
     //shift by word
     int32_t dest = m_nSize - 1; //copy destination
@@ -844,13 +856,13 @@ uintx_t& uintx_t::operator*=(const uintx_t& y){
 
 #pragma region division
 
-/// Division operator, rounding down.
-/// \param y First operand.
-/// \param z Second operand.
-/// \return The first operand divided by the second.
+/// Division operator, rounding down to floor of the fraction.
+/// \param y Numerator.
+/// \param z Denominator.
+/// \return Floor of the numerator divided by the denominator.
 
 const uintx_t operator/(const uintx_t& y, const uintx_t& z){
-  if(y.m_bNaN || z.m_bNaN || z > y)
+  if(y.m_bNaN || z.m_bNaN || z == 0)
     return uintx_t::NaN;
 
   uintx_t q(0); //result
@@ -858,7 +870,7 @@ const uintx_t operator/(const uintx_t& y, const uintx_t& z){
   if(y >= z){
     uintx_t r(y), w(z);
 
-    w <<= y.log2() - z.log2();
+    w <<= log2x(y) - log2x(z);
 
     while(w <= y)
       w <<= 1;
@@ -878,23 +890,23 @@ const uintx_t operator/(const uintx_t& y, const uintx_t& z){
 } //operator/
 
 /// Division operator, rounding down.
-/// \param y Operand.
-/// \return Reference after division by the second.
+/// \param y Denominator.
+/// \return Reference after division by the denominator.
 
 uintx_t& uintx_t::operator/=(const uintx_t& y){ 
   return *this = *this/y;
 } //operator/
 
 /// Remainder operator.
-/// \param y First operand.
-/// \param z Second operand.
-/// \return Remainder after the first operand if divided by the second.
+/// \param y Numerator.
+/// \param z Denominator.
+/// \return Remainder after the numerator is divided by the denominator.
 
 const uintx_t operator%(const uintx_t& y, const uintx_t& z){ 
-  if(y.m_bNaN || z.m_bNaN)
+  if(y.m_bNaN || z.m_bNaN || z == 0)
     return uintx_t::NaN;
 
-  uintx_t result(y);
+  uintx_t result(y); 
   uintx_t w(z);
 
   while(w <= y)
@@ -911,8 +923,8 @@ const uintx_t operator%(const uintx_t& y, const uintx_t& z){
 } //operator%
 
 /// Remainder operator.
-/// \param y Operand.
-/// \return Reference after division by the operand.
+/// \param y Denominator.
+/// \return Reference after division by the denominator.
 
 uintx_t& uintx_t::operator%=(const uintx_t& y){ 
   return *this = *this%y;
@@ -929,7 +941,7 @@ uintx_t& uintx_t::operator%=(const uintx_t& y){
 /// \param x Operand.
 /// \return Least significant 32 bits of the operand.
 
-const uint32_t to_uint32(uintx_t x){
+const uint32_t to_uint32(const uintx_t& x){
   if(x.m_bNaN)return 0;
   else if(x.m_nSize <= 0)return 0;
   else return x.m_pData[0];
@@ -939,7 +951,7 @@ const uint32_t to_uint32(uintx_t x){
 /// \param x Operand.
 /// \return Least significant 64 bits of the operand.
 
-const uint64_t to_uint64(uintx_t x){
+const uint64_t to_uint64(const uintx_t& x){
   if(x.m_bNaN)return 0;
   else if(x.m_nSize <= 1)return to_uint32(x);
   return (uint64_t(x.m_pData[1]) << 32) | uint64_t(x.m_pData[0]);
@@ -951,7 +963,7 @@ const uint64_t to_uint64(uintx_t x){
 /// \param x Operand.
 /// \return A float that is approximately equal to the operand.
 
-const float to_float(uintx_t x){
+const float to_float(const uintx_t& x){
   const float m = float(1LL << 32); //multiplier
   float result = 0; //return result
 
@@ -967,7 +979,7 @@ const float to_float(uintx_t x){
 /// \param x Operand.
 /// \return A double that is approximately equal to the operand.
 
-const double to_double(uintx_t x){
+const double to_double(const uintx_t& x){
   const double m = double(1LL << 32); //multiplier
   double result = 0; //return result
 
@@ -981,7 +993,7 @@ const double to_double(uintx_t x){
 /// \param x Operand.
 /// \return std::string containing the operand in hexadecimal notation.
 
-const std::string to_hexstring(uintx_t x){  
+const std::string to_hexstring(const uintx_t& x){  
   if(x.m_bNaN)return std::string("NaN");
   std::string s; //result
 
@@ -1019,7 +1031,7 @@ const std::string to_hexstring(uintx_t x){
 /// \param x Operand.
 /// \return std::string containing the operand in decimal notation.
 
-const std::string to_string(uintx_t x){  
+const std::string to_string(const uintx_t& x){  
   if(x.m_bNaN)return std::string("NaN");
   std::string s; //result
 
@@ -1027,11 +1039,13 @@ const std::string to_string(uintx_t x){
     s = "0";
 
   else{
-    while(x > 0){
-      const uint32_t digit = to_uint32(x%10);
+    uintx_t y(x);
+
+    while(y > 0){
+      const uint32_t digit = to_uint32(y%10);
       const char c = char(digit + '0');
       s += c;
-      x /= 10;
+      y /= 10;
     } //while
   } //else
   
@@ -1043,7 +1057,7 @@ const std::string to_string(uintx_t x){
 /// \param x Operand.
 /// \return std::string containing the operand in decimal notation with commas.
 
-const std::string to_commastring(uintx_t x){  
+const std::string to_commastring(const uintx_t& x){  
   if(x.m_bNaN)return std::string("NaN");
 
   std::string s = to_string(x); //result
