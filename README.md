@@ -45,8 +45,8 @@ This project is released under the [MIT License](https://github.com/Ian-Parberry
 
 1. Perhaps a new function `const uintx_t rootx(const uintx_t x, uint32_t n)` for computing the `n`th root of `x`. The code would be similar to `sqrtx()` but there's some serious bit-twiddling that needs to be done.
 
-1. Memory management is a bit naive. I should probably grow memory in powers-of-2 chunks and shrink it when it's twice as big as it needs to be.
+2. Memory management is a bit naive. I should probably grow memory in powers-of-2 chunks and shrink it when it's twice as big as it needs to be.
 
-2. There are faster algorithms that I could use, I'm thinking primarily of multiplication (the standard divide-and-conquer algorithm) and maybe the factorial function.
+3. There are faster algorithms that I could use, I'm thinking primarily of multiplication (the standard divide-and-conquer algorithm) and maybe the factorial function.
 
-3. `intx_t` might be in the future. I probably wouldn't bother with two's complement, just a sign bit.
+4. An extensible signed integer `intx_t` might be in the future. I probably wouldn't bother with two's complement, just a sign bit.
