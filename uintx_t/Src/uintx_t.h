@@ -81,12 +81,12 @@ class uintx_t{
 
     //comparison operators
 
-    friend bool operator>(const uintx_t&, const uintx_t&); ///< Greater than.
-    friend bool operator>=(const uintx_t&, const uintx_t&); ///< Greater than or equal.
-    friend bool operator<(const uintx_t&, const uintx_t&); ///< Less than.
-    friend bool operator<=(const uintx_t&, const uintx_t&); ///< Less than or equal.
-    friend bool operator==(const uintx_t&, const uintx_t&); ///< Equal to.
-    friend bool operator!=(const uintx_t&, const uintx_t&); ///< Not equal to.
+    friend const bool operator>(const uintx_t&, const uintx_t&); ///< Greater than.
+    friend const bool operator>=(const uintx_t&, const uintx_t&); ///< Greater than or equal.
+    friend const bool operator<(const uintx_t&, const uintx_t&); ///< Less than.
+    friend const bool operator<=(const uintx_t&, const uintx_t&); ///< Less than or equal.
+    friend const bool operator==(const uintx_t&, const uintx_t&); ///< Equal to.
+    friend const bool operator!=(const uintx_t&, const uintx_t&); ///< Not equal to.
 
     //bit shift operators
 

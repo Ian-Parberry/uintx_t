@@ -194,7 +194,8 @@ void uintx_t::normalize(){
 void uintx_t::loadstring(const std::string& s){ 
   m_bNaN = false;  
   
-  const size_t n = s.size();
+  const size_t start = (s[0] == '0' && s[1] == 'x')? 2: 0; //skip 0x if present
+  const size_t n = s.size() - start;
   const uint32_t nSize = (uint32_t)std::ceil((double)n/NYBBLES);
 
   if(nSize != m_nSize){
@@ -207,15 +208,15 @@ void uintx_t::loadstring(const std::string& s){
     m_pData[i] = 0; //clear m_pData
 
   uint32_t word = m_nSize - 1; //current word in long integer
-  const size_t digitcount = s.size(); //number of digits in string
+  const size_t digitcount = n; //number of digits in string
 
   uint32_t shift = (digitcount%NYBBLES)*4; //shift within word
   if(shift <= 0)shift = BITS; //wrap shift amount
 
-  const size_t i0 = (n >= 2 && s[0] == '0' && s[1] == 'x')? 2: 0; //skip 0x if present
   m_bNaN = false; //optimistically we believe that this is a number
 
-  for(size_t i=i0; i<digitcount && !m_bNaN; i++){ //load each digit from string
+  for(size_t j=0; j<digitcount && !m_bNaN; j++){ //load each digit from string
+    const size_t i = j + start; //current index
     uint32_t digit = 0; //current digit
 
     //get current digit from hex character
@@ -470,7 +471,7 @@ uintx_t uintx_t::operator--(int){
 /// \param y Second operand.
 /// \return true If the first operand is greater than the second.
 
-bool operator>(const uintx_t& x, const uintx_t& y){ 
+const bool operator>(const uintx_t& x, const uintx_t& y){ 
   if(x.m_bNaN)return false;
   if(y.m_bNaN)return true;
 
@@ -490,7 +491,7 @@ bool operator>(const uintx_t& x, const uintx_t& y){
 /// \param y Second operand.
 /// \return true If the first operand is greater than or equal to the second.
 
-bool operator>=(const uintx_t& x, const uintx_t& y){ 
+const bool operator>=(const uintx_t& x, const uintx_t& y){ 
   if(y.m_bNaN)return true;
   if(x.m_bNaN)return false;
   if(x.m_nSize > y.m_nSize)return true; 
@@ -509,7 +510,7 @@ bool operator>=(const uintx_t& x, const uintx_t& y){
 /// \param y Second operand.
 /// \return true If the first operand is less than the second.
 
-bool operator<(const uintx_t& x, const uintx_t& y){ 
+const bool operator<(const uintx_t& x, const uintx_t& y){ 
   return y > x;
 } //operator<
 
@@ -518,7 +519,7 @@ bool operator<(const uintx_t& x, const uintx_t& y){
 /// \param y Second operand.
 /// \return true If the first operand is less than or equal to the second.
 
-bool operator<=(const uintx_t& x, const uintx_t& y){ 
+const bool operator<=(const uintx_t& x, const uintx_t& y){ 
   return y >= x;
 } //operator<=
 
@@ -527,7 +528,7 @@ bool operator<=(const uintx_t& x, const uintx_t& y){
 /// \param y Second operand.
 /// \return true If the first operand is equal to the second.
 
-bool operator==(const uintx_t& x, const uintx_t& y){ 
+const bool operator==(const uintx_t& x, const uintx_t& y){ 
   if(x.m_nSize != y.m_nSize)
     return false;
 
@@ -553,7 +554,7 @@ bool operator==(const uintx_t& x, const uintx_t& y){
 /// \param y Second operand.
 /// \return true If the first operand is equal to the second.
 
-bool operator!=(const uintx_t& x, const uintx_t& y){ 
+const bool operator!=(const uintx_t& x, const uintx_t& y){ 
   return !(x == y); 
 } //operator!=
 
@@ -958,7 +959,7 @@ const uint64_t to_uint64(const uintx_t& x){
 } //to_uint64
 
 /// Convert to a single-precision floating point number. Note that floats
-/// can only store numbers up to approximately \f$3.4 \times 10^{38)\f$,
+/// can only store numbers up to approximately \f$3.4 \times 10^{38}\f$,
 /// so anything larger than that will be inf.
 /// \param x Operand.
 /// \return A float that is approximately equal to the operand.
@@ -974,7 +975,7 @@ const float to_float(const uintx_t& x){
 } //to_float
 
 /// Convert to a double-precision floating point number. Note that doubles
-/// can only store numbers up to approximately \f$1.8 \times 10^{308)\f$,
+/// can only store numbers up to approximately \f$1.8 \times 10^{308}\f$,
 /// so anything larger than that will be inf.
 /// \param x Operand.
 /// \return A double that is approximately equal to the operand.
