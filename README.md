@@ -5,10 +5,6 @@ unsigned integer type designed to be used in place of its fixed-precision
 counterparts `uint32_t` and `uint64_t` (also known as `unsigned int` and 
 `unsigned long long`) with minimal code changes (usually just an `x` here or there).
 
-## Code Documentation
-
-See https://ian-parberry.github.io/uintx_t/.
-
 ## Compiling the Code
 
 The code can be compiled under UNIX variants with g++ and under Windows
@@ -31,8 +27,15 @@ This has been tested with Visual Studio 2019 Community under Windows 10.
 A `makefile` for `g++` can be found at the root of this repository. Simply type `make all`.
 The library file `uintx_t.a` in `lib` can then be linked into your own projects
 (see `test/Src/makefile` for an example).
-A test executable file `test.exe` will also be found in the root directory. 
+An executable file `test.exe` will also be found in the root directory. 
 This has been tested with g++ 7.4 on the Ubuntu 18.04.1 subsystem under Windows 10.
+
+## Code Documentation
+
+Doxygen-generated documentation is available for
+[uintx_t](https://ian-parberry.github.io/uintx_t)
+and the
+[test program](https://ian-parberry.github.io/uintx_t/html2).
 
 ## License
 
