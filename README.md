@@ -45,7 +45,7 @@ This project is released under the [MIT License](https://github.com/Ian-Parberry
 
 1. Perhaps a new function `const uintx_t rootx(const uintx_t x, uint32_t n)` for computing the `n`th root of `x`. The code would be similar to that of `const uintx_t sqrtx(const uintx_t x)` but there's some serious bit-twiddling that needs to be done.
 
-2. Memory management is a bit naive and will certainly slow things down if you really hammer on `uintx_t`. I should probably grow memory in powers-of-2 chunks and shrink it when it's twice as big as it needs to be. On the other hand, `m_pData` could easily be replaced by an instance of `std::vector<uint32_t>`. That would be less work, but then I would have to trust `std` to do the memory management for me, which I don't entirely. Also a shallow copy would also help speed things up in the right places.
+2. Memory management is a bit naive and will certainly slow things down if you really hammer on `uintx_t`. I should probably grow memory in powers-of-2 chunks and shrink it when it's twice as big as it needs to be. On the other hand, `m_pData` could easily be replaced by an instance of `std::vector<uint32_t>`. That would be less work, but then I would have to trust `std` to do the memory management for me, which I don't entirely. Also a shallow copy operation might help reduce the amount of memory being casually slung around in many of the operators.
 
 3. There are faster algorithms that I could use, I'm thinking primarily of multiplication (the standard divide-and-conquer algorithm) and maybe the factorial function.
 
