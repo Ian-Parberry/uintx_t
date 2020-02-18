@@ -5,6 +5,10 @@ unsigned integer type designed to be used in place of its fixed-precision
 counterparts `uint32_t` and `uint64_t` (also known as `unsigned int` and 
 `unsigned long long`) with minimal code changes (usually just an `x` here or there).
 
+##Code Documentation
+
+See https://ian-parberry.github.io/uintx_t/.
+
 ## Compiling the Code
 
 The code can be compiled under UNIX variants with g++ and under Windows
