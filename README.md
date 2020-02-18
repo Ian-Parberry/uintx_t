@@ -31,3 +31,11 @@ The makefile has been tested with g++ 7.4 on the Ubuntu 18.04.1 subsystem under 
 ## License
 
 This project is released under the [MIT License](https://github.com/Ian-Parberry/Tourney/blob/master/LICENSE).
+
+## To-Do List
+
+1. Memory management is a bit naive. I should probably grow memory in powers-of-2 chunks and shrink it when it's twice as big as it needs to be.
+
+2. There are faster algorithms that I could use, I'm thinking primarily of multiplication (the standard divide-and-conquer) and maybe the factorial function (but who really cares?).
+
+3. `intx_t` might be in the future. I probebly wouldn't bother with two's complement, just a sign bit.
