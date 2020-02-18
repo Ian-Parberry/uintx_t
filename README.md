@@ -1,5 +1,9 @@
 # uintx_t
 
+The extensible unsigned integer type `uintx_t` is an arbitrary-precision
+unsigned integer type designed to be used in place of their fixed-precision
+counterparts with minimal code changes (usually just an `x` here or there).
+
 ## Compiling the Code
 ### Windows and Visual Studio
 
