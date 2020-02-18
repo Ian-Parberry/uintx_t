@@ -12,8 +12,9 @@ with Visual Studio. Both 32-bit and 64-bit targets are supported.
 
 ### Windows and Visual Studio
 
-Two Visual Studio solution files, `uintx_t.sln` and `test.sln`
-have been provided. You must compile `uintx_t.sln` first. It generates
+Two Visual Studio solution files `uintx_t.sln` and `test.sln`
+can be found at the root of this repository.
+ You must compile `uintx_t.sln` first. It generates
 a library file `uintx_t.lib`, the appropriate version of which for your platform and
 configuration can be found in the corresponding sub-folder of `lib`.
 You may then compile `test.sln` if you wish, although this is optional.
@@ -23,10 +24,10 @@ The solution files have been tested with Visual Studio 2019 Community under Wind
 
 ### UNIX and g++
 
-A `makefile` for `g++` has been placed in the root directory. Simply type `make all`.
-The library files`uintx_t.a` in `lib` can then be linked into your own projects
+A `makefile` for `g++` can be found at the root of this repository. Simply type `make all`.
+The library file `uintx_t.a` in `lib` can then be linked into your own projects
 (see `test/Src/makefile` for an example).
-A test executable file `test.exe` will be found in the root directory. 
+A test executable file `test.exe` will also be found in the root directory. 
 The makefile has been tested with g++ 7.4 on the Ubuntu 18.04.1 subsystem under Windows 10.
 
 ## License
