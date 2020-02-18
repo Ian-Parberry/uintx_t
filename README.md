@@ -2,8 +2,8 @@
 
 The *extensible unsigned integer* `uintx_t` is an arbitrary-precision
 unsigned integer type designed to be used in place of its fixed-precision
-counterparts `uint32_t` and `uint64_t` (also known as **unsigned int** and 
-**unsigned long long**) with minimal code changes (usually just an `x` here or there).
+counterparts `uint32_t` and `uint64_t` (also known as `unsigned int` and 
+`unsigned long long`) with minimal code changes (usually just an `x` here or there).
 
 ## Compiling the Code
 
