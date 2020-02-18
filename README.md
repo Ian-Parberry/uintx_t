@@ -5,6 +5,10 @@ unsigned integer type designed to be used in place of their fixed-precision
 counterparts with minimal code changes (usually just an `x` here or there).
 
 ## Compiling the Code
+
+The code can be compiled under UNIX variants with g++ and under Windows
+with Visual Studio. Both 32-bit and 64-bit targets are supported. 
+
 ### Windows and Visual Studio
 
 Two Visual Studio solution files, `uintx_t.sln` and `test.sln`
