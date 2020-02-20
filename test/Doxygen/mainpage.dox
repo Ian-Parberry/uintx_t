@@ -1,0 +1,12 @@
+/// \mainpage 
+///
+/// Overview
+/// ========
+///
+/// A quick and easy sequence of tests for the extensible unsigned integer
+/// class `uintx_t`. These tests are not meant to be comprehensive. Rather,
+/// they serve as minimal verification of the `uintx_t` implementation and
+/// as examples of how to code with extensible unsigned integers. For a
+/// list of the test performed, see main.cpp.
+
+
