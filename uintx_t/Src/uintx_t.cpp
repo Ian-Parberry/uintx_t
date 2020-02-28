@@ -248,9 +248,12 @@ void uintx_t::loadstring(const std::string& s){
 
 #pragma endregion helpers
 
-/// Log base 2 function for extensible unsigned integers.
+/// Log base 2 function for extensible unsigned integers, which is equivalent
+/// to finding the position of the most significant non-zero bit. Assuming that
+/// the operand is normalized, the most significant non-zero bit will be found
+/// in its most significant bit.
 /// \param x Operand.
-/// \return Floor of the square root of the operand.
+/// \return Floor of the log base 2 of the operand.
 
 const uint32_t log2x(const uintx_t& x){
   if(x.m_bNaN || x.m_nSize <= 0)return 1;
