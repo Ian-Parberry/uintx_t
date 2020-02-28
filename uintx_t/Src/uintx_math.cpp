@@ -126,7 +126,7 @@ const uintx_t sqrtx(const uintx_t& x){
 
   //start by finding the most significant bit (msb) of the result.
 
-  int32_t j = (log2x(x) - 1)/2 + 1; 
+  int32_t j = log2x(x)/2 + 1; 
 
   uintx_t n = uintx_t(1) << j; //mask for msb of result
   uintx_t n2 = n << j; //mask for msb of result^2

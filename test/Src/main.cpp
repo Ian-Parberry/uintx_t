@@ -4,18 +4,28 @@
 #include "uintx_t.h"
 #include "uintx_math.h"
 
+uint32_t g_nTestCount = 0; ///< Number of tests performed.
+uint32_t g_nPassCount = 0; ///< Number of tests passed.
+
 //////////////////////////////////////////////////////////////////////////////
 // Helper functions
 
-/// \brief Print test results.
+/// \brief Report a test result.
 ///
-/// Print the results of a test (passed or failed) to stdout.
+/// Print the result of a test (passed or failed) to stdout and increment
+/// the test counter and pass counter (in the event of a pass).
 ///
 /// \param result True if the test was passed.
 
 void ReportTestResult(bool result){
-  if(result)printf("Test passed\n\n");
-  else printf("**** Test failed\n\n");
+  g_nTestCount++;
+
+  if(result){
+    printf("Test passed\n\n");
+    g_nPassCount++;
+  } //if
+
+  else printf("**** Test failed ****\n\n");
 } //ReportTestResult
 
 //////////////////////////////////////////////////////////////////////////////
@@ -240,6 +250,8 @@ int main(){
   TestGcd("0x766C1042499184CAAB4A80602433449A", "0x21C3677C82B40000");
   TestPower("0x8B99E6BDDEC48");
   TestSqrt(powx(0xFFFFFFFFF, 5)*fibx(100));
+
+  printf("%u tests passed out of %u\n", g_nPassCount, g_nTestCount);
 
   return 0; //what could possibly go wrong?
 } //main
