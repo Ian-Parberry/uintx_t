@@ -10,7 +10,7 @@ counterparts `uint32_t` and `uint64_t` (also known as `unsigned int` and
 There are three parts to this code.
 1. The `uintx_t` library.
 2. A `test` program that  prints the results of some hard-coded uintx_t calculations.
-2. A `check` program that will evaluate some uintx_t arithmetic expressions entered by the user.
+3. A `check` program that will evaluate some uintx_t arithmetic expressions entered by the user.
 
 ## Code Documentation
 
