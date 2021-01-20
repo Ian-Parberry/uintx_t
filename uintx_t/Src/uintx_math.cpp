@@ -6,6 +6,7 @@
 /// means that none of them need be a friend to uintx_t.
 
 #include <algorithm>
+#include <cmath>
 #include "uintx_t.h"
 
 /// Raise an extensible unsigned integer to the power of another using
@@ -96,7 +97,7 @@ const uintx_t lcmx(const uintx_t& x, const uintx_t& y){
 const uintx_t fibx(uint32_t n){
 	uintx_t a(0); //the result
 	uintx_t b(1);
-  uint32_t mask = 1 << (uint32_t)(floor(log2(n))); //most significant bit
+  uint32_t mask = 1 << (uint32_t)(std::floor(std::log2(n))); //most significant bit
 
 	while(mask > 0){
 		uintx_t d = a*(2*b - a);
