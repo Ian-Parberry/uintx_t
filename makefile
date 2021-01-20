@@ -3,6 +3,7 @@
 all: lib test cleanup
 
 lib:
+	@mkdir lib
 	@make -s -C uintx_t/Src/ lib
 	
 test:
