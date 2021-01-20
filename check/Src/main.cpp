@@ -45,9 +45,9 @@ void readln(std::string& s){
 /// Print a useful help string.
 
 void PrintHelp(){ 
-  printf("Enter a parenthesized arithmetic expression using unsigned");
-  printf(" integers of any length, the\narithmetic operators +-*/");
-  printf(" with normal operator precedence, and the following functions.\n");
+  printf("Enter a parenthesized arithmetic expression using unsigned integers\n");
+  printf("of any length, the arithmetic operators +-*/ with normal operator\n");
+  printf("precedence, and the following functions.\n");
   printf("  sqrtx: Floor of square root.\n");
   printf("  sqrx: Square.\n");
   printf("  factorialx: Factorial.\n");
@@ -142,8 +142,8 @@ void PrintUintx(const uintx_t& x){
 /// \return 0 for success, 1 for failure.
 
 int main(){
-  printf("Extensible unsigned integer arithmetic expression evaluator.");
-  printf(" Type \"help\" or \"?\" for help.\n");
+  printf("Extensible unsigned integer arithmetic expression evaluator.\n");
+  printf("Type \"help\" or \"?\" for help.\n");
   CParser parser; //parser for arithmetic expressions
 
   while(!g_bFinished){ //process an arithmetic expression from the user
