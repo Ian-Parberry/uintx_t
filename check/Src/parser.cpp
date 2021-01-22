@@ -78,7 +78,9 @@ bool CParser::factor(CNode*& tree){
   else if(accept(SymbolType::Identifier) && expect(SymbolType::LParen)){
     CNode* node = nullptr;
     bError = expression(node) || !expect(SymbolType::RParen);
-    if(!bError)tree = new CNode(m_strIdentifier, node);
+    std::string identifier = m_stdIdentifierStack.top();
+    m_stdIdentifierStack.pop(); 
+    if(!bError)tree = new CNode(identifier, node);
   } //else if
 
   else{

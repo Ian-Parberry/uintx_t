@@ -46,7 +46,7 @@ const bool isWhitespace(const char c){
 /// \return true if there is an error.
 
 bool CLex::getsymbol(){
-  bool error = false;
+  bool error = false; //error flag
 
   //skip white space
   while(m_nCurChar < m_nStrLen && isWhitespace(m_strBuffer[m_nCurChar]))
@@ -98,25 +98,27 @@ void CLex::getnumber(){
   }while(m_nCurChar < m_nStrLen && isNumeric(m_strBuffer[m_nCurChar]));
 } //getnumber
 
-/// Get an identifier from m_strBuffer into m_strIdentifier. Identifiers
+/// Get an identifier from m_strBuffer into the identifer stack. Identifiers
 /// are alphanumeric and must start with a letter.
 /// Assumes that m_strBuffer[m_nCurChar] is a letter.
 /// \return true if there is an error.
 
 bool CLex::getidentifier(){
-  bool bError = false;
-  m_strIdentifier = "";
+  bool bError = false; //error flag
+  std::string strIdentifier; //current identifier
 
   do{
-    m_strIdentifier += m_strBuffer[m_nCurChar++];
+    strIdentifier += m_strBuffer[m_nCurChar++];
   }while(m_nCurChar < m_nStrLen && isAlphaNumeric(m_strBuffer[m_nCurChar]));
 
-  if(m_setFunctions.find(m_strIdentifier) == m_setFunctions.end()){
+  if(m_setFunctions.find(strIdentifier) == m_setFunctions.end()){ //error
     bError = true;
     
     for(size_t i=0; i<m_nCurChar; i++)putchar(' ');
       printf("  ^ %s\n", "Unknown identifier"); //2 extra spaces for the prompt
   } //if
+
+  else m_stdIdentifierStack.push(strIdentifier); //valid identifier
 
   return bError;
 } //getidentifier
