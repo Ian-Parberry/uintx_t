@@ -26,7 +26,7 @@ CNode::CNode(uintx_t n):
 /// \param identifier Function identifier.
 /// \param lchild Pointer to left child.
 
-CNode::CNode(std::string identifier, CNode* lchild):
+CNode::CNode(const std::string& identifier, CNode* lchild):
   m_eNodeType(NodeType::Function), m_strIdentifier(identifier),
   m_pLeftChild(lchild){
 } //constructor
@@ -116,13 +116,12 @@ void CNode::postorder(std::string& s){
       if(m_pLeftChild)m_pLeftChild->postorder(s);
       s += ' ';
       if(m_pRightChild)m_pRightChild->postorder(s);
-      s += ' '; s += OperatorToString(m_eOperator);
+      s += ' '+ OperatorToString(m_eOperator);
     break;
 
     case NodeType::Function: //function call
       if(m_pLeftChild)m_pLeftChild->postorder(s);
-      s += ' ';
-      s += m_strIdentifier;
+      s += ' ' + m_strIdentifier;
     break;
   } //switch
 } //postorder

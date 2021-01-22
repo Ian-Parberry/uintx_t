@@ -40,7 +40,7 @@ class CNode{
   public:
     CNode(Operator op, CNode* lchild, CNode* rchild=nullptr); ///< Constructor.
     CNode(uintx_t n); ///< Constructor.
-    CNode(std::string identifier, CNode* lchild); ///< Constructor.
+    CNode(const std::string& identifier, CNode* lchild); ///< Constructor.
     
     ~CNode(); ///< Destructor.
 
