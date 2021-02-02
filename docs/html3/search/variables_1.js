@@ -12,7 +12,6 @@ var searchData=
   ['m_5fpleftchild',['m_pLeftChild',['../class_c_node.html#a6e883b564c1f09c8aed3433f21e7dd72',1,'CNode']]],
   ['m_5fprightchild',['m_pRightChild',['../class_c_node.html#a3552abeab945b5c4b97404fe03a21594',1,'CNode']]],
   ['m_5fsetfunctions',['m_setFunctions',['../class_c_lex.html#a6fe92174dfed9707f7a1670388b311e1',1,'CLex']]],
-  ['m_5fstdidentifierstack',['m_stdIdentifierStack',['../class_c_lex.html#a363fd48a6fabaabe490ab1314ef0b323',1,'CLex']]],
   ['m_5fstrbuffer',['m_strBuffer',['../class_c_lex.html#a878b354725b0d548550d329eacbaaefc',1,'CLex']]],
-  ['m_5fstridentifier',['m_strIdentifier',['../class_c_node.html#aaa1e562de047690215625d2a3bf4339a',1,'CNode']]]
+  ['m_5fstridentifier',['m_strIdentifier',['../class_c_node.html#aaa1e562de047690215625d2a3bf4339a',1,'CNode::m_strIdentifier()'],['../class_c_lex.html#a6c175ebf2c52f67adb1a2e7769d169bf',1,'CLex::m_strIdentifier()']]]
 ];

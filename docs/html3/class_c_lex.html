@@ -129,15 +129,15 @@ size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cl
 uintx_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_lex.html#a20da8fbf0a20b8b405d25b0dfa097838">m_nNumber</a> = 0</td></tr>
 <tr class="memdesc:a20da8fbf0a20b8b405d25b0dfa097838"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current number parsed, if there is one. <br /></td></tr>
 <tr class="separator:a20da8fbf0a20b8b405d25b0dfa097838"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a363fd48a6fabaabe490ab1314ef0b323"><td class="memItemLeft" align="right" valign="top"><a id="a363fd48a6fabaabe490ab1314ef0b323"></a>
-std::stack&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_lex.html#a363fd48a6fabaabe490ab1314ef0b323">m_stdIdentifierStack</a></td></tr>
-<tr class="memdesc:a363fd48a6fabaabe490ab1314ef0b323"><td class="mdescLeft">&#160;</td><td class="mdescRight">Identifier stack. <br /></td></tr>
-<tr class="separator:a363fd48a6fabaabe490ab1314ef0b323"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c175ebf2c52f67adb1a2e7769d169bf"><td class="memItemLeft" align="right" valign="top"><a id="a6c175ebf2c52f67adb1a2e7769d169bf"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_lex.html#a6c175ebf2c52f67adb1a2e7769d169bf">m_strIdentifier</a></td></tr>
+<tr class="memdesc:a6c175ebf2c52f67adb1a2e7769d169bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Identifier string. <br /></td></tr>
+<tr class="separator:a6c175ebf2c52f67adb1a2e7769d169bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A simple lexical analyzer for arithmetic expressions. </p>
 
-<p class="definition">Definition at line <a class="el" href="lexical_8h_source.html#l00025">25</a> of file <a class="el" href="lexical_8h_source.html">lexical.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="lexical_8h_source.html#l00024">24</a> of file <a class="el" href="lexical_8h_source.html">lexical.h</a>.</p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="a0ce7437771c4f2636b03dcc83d9ebc75"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0ce7437771c4f2636b03dcc83d9ebc75">&#9670;&nbsp;</a></span>getidentifier()</h2>
@@ -161,7 +161,7 @@ std::stack&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="botto
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get an identifier from m_strBuffer into the identifer stack. Identifiers are alphanumeric and must start with a letter. Assumes that m_strBuffer[m_nCurChar] is a letter. </p><dl class="section return"><dt>Returns</dt><dd>true if there is an error. </dd></dl>
+<p>Get an identifier from <code>m_strBuffer</code> into <code>m_strIdentifier</code>. Identifiers are alphanumeric and must start with a letter. Assumes that <code>m_strBuffer[m_nCurChar]</code> is a letter. </p><dl class="section return"><dt>Returns</dt><dd>true if there is an error. </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="lexical_8cpp_source.html#l00106">106</a> of file <a class="el" href="lexical_8cpp_source.html">lexical.cpp</a>.</p>
 
@@ -189,7 +189,7 @@ std::stack&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="botto
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get a number. Assumes that m_strBuffer[m_nCurChar] is a digit. Reads the unsigned number starting there into m_nNumber. </p>
+<p>Get a number. Assumes that <code>m_strBuffer[m_nCurChar]</code> is a digit. Reads the unsigned number starting there into <code>m_nNumber</code>. </p>
 
 <p class="definition">Definition at line <a class="el" href="lexical_8cpp_source.html#l00093">93</a> of file <a class="el" href="lexical_8cpp_source.html">lexical.cpp</a>.</p>
 
@@ -217,7 +217,7 @@ std::stack&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="botto
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get next symbol (at index m_nCurChar) from m_strBuffer into m_eSymbol. </p><dl class="section return"><dt>Returns</dt><dd>true if there is an error. </dd></dl>
+<p>Get next symbol (at index <code>m_nCurChar</code>) from <code>m_strBuffer</code> into <code>m_eSymbol</code>. </p><dl class="section return"><dt>Returns</dt><dd>true if there is an error. </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="lexical_8cpp_source.html#l00048">48</a> of file <a class="el" href="lexical_8cpp_source.html">lexical.cpp</a>.</p>
 
@@ -244,14 +244,14 @@ std::stack&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="botto
 </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">= { </div><div class="line">      <span class="stringliteral">&quot;sqrtx&quot;</span>, <span class="stringliteral">&quot;sqrx&quot;</span>, <span class="stringliteral">&quot;factorialx&quot;</span>, <span class="stringliteral">&quot;exp2x&quot;</span>, <span class="stringliteral">&quot;fibx&quot;</span>, <span class="stringliteral">&quot;log2x&quot;</span></div><div class="line">    }</div></div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="lexical_8h_source.html#l00027">27</a> of file <a class="el" href="lexical_8h_source.html">lexical.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="lexical_8h_source.html#l00026">26</a> of file <a class="el" href="lexical_8h_source.html">lexical.h</a>.</p>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jan 25 2021 10:41:32 for uintx_t Check by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Feb 2 2021 12:48:34 for uintx_t Check by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.14
 </small></address>
