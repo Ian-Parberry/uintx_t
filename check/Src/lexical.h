@@ -6,7 +6,6 @@
 
 #include <string>
 #include <set>
-#include <stack>
 
 #include "uintx_t.h"
 
@@ -34,7 +33,7 @@ class CLex{
 
     SymbolType m_eSymbol = SymbolType::Null; ///< Current symbol.
     uintx_t m_nNumber = 0; ///< Current number parsed, if there is one.
-    std::stack<std::string> m_stdIdentifierStack; ///< Identifier stack.
+    std::string m_strIdentifier; ///< Identifier string.
     
     bool getsymbol(); ///< Get symbol into m_eSymbol.
     void getnumber(); ///< Get number into m_nNumber.  

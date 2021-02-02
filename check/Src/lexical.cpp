@@ -42,7 +42,7 @@ const bool isWhitespace(const char c){
 //////////////////////////////////////////////////////////////////////////////
 //Lexical analyzer functions
 
-/// Get next symbol (at index m_nCurChar) from m_strBuffer into m_eSymbol.
+/// Get next symbol (at index `m_nCurChar`) from `m_strBuffer` into `m_eSymbol`.
 /// \return true if there is an error.
 
 bool CLex::getsymbol(){
@@ -87,8 +87,8 @@ bool CLex::getsymbol(){
 } //getsymbol
 
 /// Get a number.
-/// Assumes that m_strBuffer[m_nCurChar] is a digit. 
-/// Reads the unsigned number starting there into m_nNumber.
+/// Assumes that `m_strBuffer[m_nCurChar]` is a digit. 
+/// Reads the unsigned number starting there into `m_nNumber`.
 
 void CLex::getnumber(){
   m_nNumber = 0;
@@ -98,9 +98,9 @@ void CLex::getnumber(){
   }while(m_nCurChar < m_nStrLen && isNumeric(m_strBuffer[m_nCurChar]));
 } //getnumber
 
-/// Get an identifier from m_strBuffer into the identifer stack. Identifiers
-/// are alphanumeric and must start with a letter.
-/// Assumes that m_strBuffer[m_nCurChar] is a letter.
+/// Get an identifier from `m_strBuffer` into `m_strIdentifier`.
+/// Identifiers are alphanumeric and must start with a letter.
+/// Assumes that `m_strBuffer[m_nCurChar]` is a letter.
 /// \return true if there is an error.
 
 bool CLex::getidentifier(){
@@ -118,7 +118,7 @@ bool CLex::getidentifier(){
       printf("  ^ %s\n", "Unknown identifier"); //2 extra spaces for the prompt
   } //if
 
-  else m_stdIdentifierStack.push(strIdentifier); //valid identifier
+  else m_strIdentifier = strIdentifier; //valid identifier
 
   return bError;
 } //getidentifier

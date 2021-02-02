@@ -58,9 +58,9 @@ const bool CParser::IsTermOp(){
 //Recursive descent functions.
 
 /// Recursive descent function to build a sub-tree for a factor 
-/// using the production \f[\langle\text{factor}\rangle \rightarrow
+/// using the production \f$\langle\text{factor}\rangle \rightarrow
 /// \langle\text{number}\rangle \mid ( \langle\text{expression}\rangle) \mid
-/// \langle\text{identifier}\rangle( \langle\text{expression}\rangle)\f]
+/// \langle\text{identifier}\rangle( \langle\text{expression}\rangle)\f$,
 /// where \f$\langle\text{number}\rangle\f$ is a number and 
 /// \f$\langle\text{identifier}\rangle\f$ is an identifier.
 /// \param tree [out] Reference to a pointer to root of factor sub-tree.
@@ -68,6 +68,7 @@ const bool CParser::IsTermOp(){
 
 bool CParser::factor(CNode*& tree){
   bool bError = false;
+  std::string identifier = m_strIdentifier;
 
   if(accept(SymbolType::Number))
     tree = new CNode(m_nNumber);
@@ -78,8 +79,6 @@ bool CParser::factor(CNode*& tree){
   else if(accept(SymbolType::Identifier) && expect(SymbolType::LParen)){
     CNode* node = nullptr;
     bError = expression(node) || !expect(SymbolType::RParen);
-    std::string identifier = m_stdIdentifierStack.top();
-    m_stdIdentifierStack.pop(); 
     if(!bError)tree = new CNode(identifier, node);
   } //else if
 
@@ -169,9 +168,10 @@ bool CParser::expression(CNode*& tree){
 ///////////////////////////////////////////////////////////////////////////////
 //Public functions.
 
-/// Parse a string containing an arithmetic expression into an expression tree.
+/// Parse a string containing an arithmetic expression into an expression tree
+/// with root pointed to by `m_pExpressionTree`.
 /// \param s A string.
-/// \return true if the string parsed correctly.
+/// \return true if the string parsed correctly as an arithmetic expression.
 
 bool CParser::parse(const std::string& s){
   if(s == "")return true; //nothing to parse
@@ -196,14 +196,16 @@ bool CParser::parse(const std::string& s){
   return bOK;
 } //parse
 
-/// Evaluate a parsed arithmetic expression.
-/// \return The result of evaluating a parsed arithmetic expression.
+/// Evaluate the expression tree with root pointed to by `m_pExpressionTree`.
+/// \return The result of evaluating the parsed arithmetic expression.
 
 const uintx_t CParser::evaluate(){
   return m_pExpressionTree->evaluate();
 } //evaluate
 
-/// Get postfix expression string from a parsed arithmetic expression.
+/// Get the corresponding postfix expression string from the expression tree
+/// with root pointed to by `m_pExpressionTree`. Performs a postorder
+/// traversal of the expression tree.
 /// \return Postfix expression string.
  
 const std::string CParser::GetPostfixString(){
@@ -215,7 +217,9 @@ const std::string CParser::GetPostfixString(){
   return s;
 } //GetPostfixString
 
-/// Get infix expression string from a parsed arithmetic expression.
+/// Get the corresponding infix expression string from the expression tree
+/// with root pointed to by `m_pExpressionTree`. Performs an inorder
+/// traversal of the expression tree.
 /// \return Infix expression string.
  
 const std::string CParser::GetInfixString(){

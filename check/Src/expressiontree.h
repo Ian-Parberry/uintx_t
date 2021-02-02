@@ -35,7 +35,8 @@ class CNode{
 
     CNode* m_pLeftChild = nullptr; ///< Pointer to left child.
     CNode* m_pRightChild = nullptr; ///< Pointer to right child.
-    const std::string OperatorToString(const Operator op); ///< Operator to string.
+
+    const std::string OperatorToString(const Operator op) const; ///< Operator to string.
 
   public:
     CNode(Operator op, CNode* lchild, CNode* rchild=nullptr); ///< Constructor.
@@ -44,7 +45,7 @@ class CNode{
     
     ~CNode(); ///< Destructor.
 
-    const uintx_t evaluate(); ///< Evaluate expression sub-tree.
-    void postorder(std::string& s); ///< Postorder traversal of sub-tree.
-    void inorder(std::string& s); ///< Inorder traversal of sub-tree.
+    const uintx_t evaluate() const; ///< Evaluate expression sub-tree.
+    void postorder(std::string& s) const; ///< Postorder traversal of sub-tree.
+    void inorder(std::string& s) const; ///< Inorder traversal of sub-tree.
 }; //CNode

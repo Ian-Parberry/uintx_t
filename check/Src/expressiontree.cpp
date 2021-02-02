@@ -39,7 +39,7 @@ CNode::~CNode(){
 /// Evaluate the arithmetic expression rooted at this node.
 /// \return The value of arithmetic expression rooted at this node.
 
-const uintx_t CNode::evaluate(){
+const uintx_t CNode::evaluate() const{
   uintx_t operand0 = 0; //the first operand
   uintx_t operand1 = 0; //the second operand
   uintx_t result = 0; //the return result
@@ -87,11 +87,11 @@ const uintx_t CNode::evaluate(){
   return result;
 } //evaluate
 
-/// Get the printable string for an operand.
+/// Get the printable string for an operator.
 /// \param op Operator.
 /// \return The string for the operator.
 
-const std::string CNode::OperatorToString(const Operator op){
+const std::string CNode::OperatorToString(const Operator op) const{
   switch(op){
     case Operator::None:     return std::string();
     case Operator::Add:      return std::string(" + ");
@@ -102,35 +102,35 @@ const std::string CNode::OperatorToString(const Operator op){
   } //switch
 } //OperatorToString
 
-/// Perform a postorder traversal starting at the current node
-/// and append the result to a string.
+/// Perform a postorder traversal starting at the current node and append the
+/// result to a string.
 /// \param s [in, out] String to append result of traversal to.
 
-void CNode::postorder(std::string& s){
+void CNode::postorder(std::string& s) const{
   switch(m_eNodeType){
     case NodeType::Number: //number
       s += to_string(m_nValue);
     break;
 
     case NodeType::Operator: //operator
-      if(m_pLeftChild)m_pLeftChild->postorder(s);
+      if(m_pLeftChild)m_pLeftChild->postorder(s); //left operand
       s += ' ';
-      if(m_pRightChild)m_pRightChild->postorder(s);
-      s += ' '+ OperatorToString(m_eOperator);
+      if(m_pRightChild)m_pRightChild->postorder(s); //right operand
+      s += ' '+ OperatorToString(m_eOperator); //operator
     break;
 
     case NodeType::Function: //function call
-      if(m_pLeftChild)m_pLeftChild->postorder(s);
-      s += ' ' + m_strIdentifier;
+      if(m_pLeftChild)m_pLeftChild->postorder(s); //operand
+      s += ' ' + m_strIdentifier; //identifier
     break;
   } //switch
 } //postorder
 
-/// Perform an inorder traversal starting at the current node
-/// and append the result to a string.
+/// Perform an inorder traversal starting at the current node and append the
+/// result to a string.
 /// \param s [in, out] String to append result of traversal to.
 
-void CNode::inorder(std::string& s){
+void CNode::inorder(std::string& s) const{
   switch(m_eNodeType){
     case NodeType::Number: //number
       s += to_string(m_nValue);
@@ -138,16 +138,16 @@ void CNode::inorder(std::string& s){
 
     case NodeType::Operator: //operator
       s += "(";
-      if(m_pLeftChild)m_pLeftChild->inorder(s);
-      s += OperatorToString(m_eOperator);
-      if(m_pRightChild)m_pRightChild->inorder(s);
+      if(m_pLeftChild)m_pLeftChild->inorder(s); //left operand
+      s += OperatorToString(m_eOperator); //operator
+      if(m_pRightChild)m_pRightChild->inorder(s); //right operand
       s += ")";
     break;
 
     case NodeType::Function: //function call
-      s += m_strIdentifier + "(";
-      if(m_pLeftChild)m_pLeftChild->inorder(s);
-      s += ")";
+      s += m_strIdentifier + "("; //identifier and open parenthesis
+      if(m_pLeftChild)m_pLeftChild->inorder(s); //operand
+      s += ")"; //close parenthesis
     break;
   } //switch
 } //inorder
