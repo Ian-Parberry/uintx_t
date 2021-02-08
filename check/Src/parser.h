@@ -16,24 +16,35 @@
 
 /// \brief Arithmetic expression parser.
 ///
-/// A recursive descent parser for arithmetic expressions.
-/// Note that while arithmetic expressions are not LL(1), the thing that
-/// stops them being LL(1) is easily handled by while-loops in functions term()
-/// and expression().
+/// A recursive descent parser for arithmetic expressions. Note that while
+/// fully parenthesized infix arithmetic expressions are LL(1) and hence
+/// capable of being parsed by a recursive descent parser, arithmetic expressions
+/// with operator precedence are not. However, this is easily handled by
+/// turning if-statements in functions term() and expression() into while-loops.
+/// This parser constructs an expression tree from the tokens provided by the
+/// lexical analyzer. This expression tree may then be evaluated or printed out.
 
 class CParser: public CLex{
   private:
     /// \brief Error code.
+    ///
+    /// The parser can detect three kinds of error: a syntax error, an
+    /// unexpected symbol in the input, and a malformed arithmetic expression.
 
     enum class ErrorCode{
       Syntax, UnexpectedSymbol, Malformed
     }; //ErrorCode
 
+    /// \brief Error map.
+    ///
+    /// The error map maps an error code to a human-readable string that
+    /// briefly explains the error.
+
     std::map<ErrorCode, std::string> m_mapError = { 
       {ErrorCode::Syntax, "Syntax error"},
       {ErrorCode::UnexpectedSymbol, "Unexpected symbol"},
       {ErrorCode::Malformed, "Malformed expression"}
-    }; ///< Error map.
+    }; //Error map.
 
     void error(const ErrorCode e); ///< Error processing.
     bool accept(const SymbolType s); ///< Skip over a particular kind of symbol.
@@ -45,8 +56,6 @@ class CParser: public CLex{
 
     const bool IsExpressionOp(); ///< Is an expression operator.
     const bool IsTermOp(); ///< Is a term operator.
-
-    //expression tree
 
     CNode* m_pExpressionTree = nullptr; ///< Pointer to expression tree root.
 
