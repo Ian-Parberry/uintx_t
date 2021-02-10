@@ -99,15 +99,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a36d8ff83e330c54185be24a2e97d36d7"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_parser.html#a36d8ff83e330c54185be24a2e97d36d7">parse</a> (const std::string &amp;s)</td></tr>
 <tr class="memdesc:a36d8ff83e330c54185be24a2e97d36d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse a string.  <a href="#a36d8ff83e330c54185be24a2e97d36d7">More...</a><br /></td></tr>
 <tr class="separator:a36d8ff83e330c54185be24a2e97d36d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a73b8abb1f60f57b16ee25a61610f3409"><td class="memItemLeft" align="right" valign="top">const uintx_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_parser.html#a73b8abb1f60f57b16ee25a61610f3409">evaluate</a> ()</td></tr>
-<tr class="memdesc:a73b8abb1f60f57b16ee25a61610f3409"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate arithmetic expression.  <a href="#a73b8abb1f60f57b16ee25a61610f3409">More...</a><br /></td></tr>
-<tr class="separator:a73b8abb1f60f57b16ee25a61610f3409"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0666a1ae8b19d3d6facd1934c604a41a"><td class="memItemLeft" align="right" valign="top">const std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_parser.html#a0666a1ae8b19d3d6facd1934c604a41a">GetPostfixString</a> ()</td></tr>
-<tr class="memdesc:a0666a1ae8b19d3d6facd1934c604a41a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get postfix string.  <a href="#a0666a1ae8b19d3d6facd1934c604a41a">More...</a><br /></td></tr>
-<tr class="separator:a0666a1ae8b19d3d6facd1934c604a41a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acdc46c3502a2d33fe73f79e799bd36c5"><td class="memItemLeft" align="right" valign="top">const std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_parser.html#acdc46c3502a2d33fe73f79e799bd36c5">GetInfixString</a> ()</td></tr>
-<tr class="memdesc:acdc46c3502a2d33fe73f79e799bd36c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get infix string.  <a href="#acdc46c3502a2d33fe73f79e799bd36c5">More...</a><br /></td></tr>
-<tr class="separator:acdc46c3502a2d33fe73f79e799bd36c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3aeb38c4537c81fcc922aa165f9227b8"><td class="memItemLeft" align="right" valign="top">const uintx_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_parser.html#a3aeb38c4537c81fcc922aa165f9227b8">evaluate</a> () const</td></tr>
+<tr class="memdesc:a3aeb38c4537c81fcc922aa165f9227b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate arithmetic expression.  <a href="#a3aeb38c4537c81fcc922aa165f9227b8">More...</a><br /></td></tr>
+<tr class="separator:a3aeb38c4537c81fcc922aa165f9227b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a115f4314427ca324abbc8dfdf06abf4b"><td class="memItemLeft" align="right" valign="top">const std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_parser.html#a115f4314427ca324abbc8dfdf06abf4b">GetPostfixString</a> () const</td></tr>
+<tr class="memdesc:a115f4314427ca324abbc8dfdf06abf4b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get postfix string.  <a href="#a115f4314427ca324abbc8dfdf06abf4b">More...</a><br /></td></tr>
+<tr class="separator:a115f4314427ca324abbc8dfdf06abf4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac0474dd2fdea8c253600e2753f1bbab8"><td class="memItemLeft" align="right" valign="top">const std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_parser.html#ac0474dd2fdea8c253600e2753f1bbab8">GetInfixString</a> () const</td></tr>
+<tr class="memdesc:ac0474dd2fdea8c253600e2753f1bbab8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get infix string.  <a href="#ac0474dd2fdea8c253600e2753f1bbab8">More...</a><br /></td></tr>
+<tr class="separator:ac0474dd2fdea8c253600e2753f1bbab8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-types"></a>
 Private Types</h2></td></tr>
@@ -197,9 +197,11 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <tr class="separator:a6c175ebf2c52f67adb1a2e7769d169bf inherit pro_attribs_class_c_lex"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>A recursive descent parser for arithmetic expressions. Note that while fully parenthesized infix arithmetic expressions are LL(1) and hence capable of being parsed by a recursive descent parser, arithmetic expressions with operator precedence are not. However, this is easily handled by turning if-statements in functions <a class="el" href="class_c_parser.html#a9c7fae07300a93d2fb19b6b220cae436" title="Process term. ">term()</a> and <a class="el" href="class_c_parser.html#a8df8eb655b6a44a3e5f5f7d36b09cc97" title="Process expression. ">expression()</a> into while-loops. This parser constructs an expression tree from the tokens provided by the lexical analyzer. This expression tree may then be evaluated or printed out. </p>
-
-<p class="definition">Definition at line <a class="el" href="parser_8h_source.html#l00027">27</a> of file <a class="el" href="parser_8h_source.html">parser.h</a>.</p>
+<div class="textblock"><p>A recursive descent parser for unsigned arithmetic expressions. While fully parenthesized infix arithmetic expressions are LL(1) and hence capable of being parsed by a recursive descent parser, arithmetic expressions with operator precedence are not. However, this is easily handled by turning if-statements in functions <a class="el" href="class_c_parser.html#a9c7fae07300a93d2fb19b6b220cae436" title="Process term. ">term()</a> and <a class="el" href="class_c_parser.html#a8df8eb655b6a44a3e5f5f7d36b09cc97" title="Process expression. ">expression()</a> into while-loops. This parser constructs an expression tree from the tokens provided by the lexical analyzer. This expression tree may then be evaluated or printed out. The language recognized by the parser is given by the following context-free grammar, where nonterminal symbols are enclosed in angle brackets \(\langle\rangle\), terminal symbols are single characters, square brackets \([\,]\) are used for grouping, the vertical bar \(|\) is alternation, and the superscript \(*\) indicates Kleene closure, that is, "zero or more copies of". </p><p class="formulaDsp">
+\begin{eqnarray*} \langle\text{expression}\rangle &amp;\rightarrow&amp; \langle\text{term}\rangle \left[ \langle \text{addop}\rangle \langle\text{term}\rangle)\right]^*\\ \langle\text{term}\rangle &amp;\rightarrow&amp; \langle\text{factor}\rangle \left[ \langle \text{mulop}\rangle \langle\text{factor}\rangle)\right]^*\\ \langle\text{factor}\rangle &amp;\rightarrow&amp; \langle\text{number}\rangle \mid \langle\text{lparen}\rangle \langle\text{expression}\rangle\langle\text{rparen}\rangle \mid \langle\text{identifier}\rangle\langle\text{lparen}\rangle \langle\text{expression}\rangle\langle\text{rparen}\rangle\\ \langle\text{identifier}\rangle &amp;\rightarrow&amp; \langle\text{letter}\rangle\left[ \langle \text{letter}\rangle \mid \langle\text{digit}\rangle)\right]^*\\ \langle\text{number}\rangle &amp;\rightarrow&amp; \langle\text{digit}\rangle\langle\text{digit}\rangle^*\\ \langle\text{letter}\rangle &amp;\rightarrow&amp; \text{a} | \text{b} | \text{c} | \ldots | \text{z}\\ \langle\text{digit}\rangle &amp;\rightarrow&amp; \text{0}|\text{1}|\text{2}|\ldots |\text{9}\\ \langle\text{addop}\rangle &amp;\rightarrow&amp; + \mid -\\ \langle\text{mulop}\rangle &amp;\rightarrow&amp; * \mid /\\ \langle\text{lparen}\rangle &amp;\rightarrow&amp; (\\ \langle\text{lparen}\rangle &amp;\rightarrow&amp; )\\ \end{eqnarray*}
+</p>
+ 
+<p class="definition">Definition at line <a class="el" href="parser_8h_source.html#l00059">59</a> of file <a class="el" href="parser_8h_source.html">parser.h</a>.</p>
 </div><h2 class="groupheader">Member Enumeration Documentation</h2>
 <a id="ad15458385fb83805295d27e1fbb5b8e7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad15458385fb83805295d27e1fbb5b8e7">&#9670;&nbsp;</a></span>ErrorCode</h2>
@@ -222,7 +224,7 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 </div><div class="memdoc">
 <p>The parser can detect three kinds of error: a syntax error, an unexpected symbol in the input, and a malformed arithmetic expression. </p>
 
-<p class="definition">Definition at line <a class="el" href="parser_8h_source.html#l00034">34</a> of file <a class="el" href="parser_8h_source.html">parser.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parser_8h_source.html#l00066">66</a> of file <a class="el" href="parser_8h_source.html">parser.h</a>.</p>
 
 </div>
 </div>
@@ -296,8 +298,8 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 
 </div>
 </div>
-<a id="a73b8abb1f60f57b16ee25a61610f3409"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a73b8abb1f60f57b16ee25a61610f3409">&#9670;&nbsp;</a></span>evaluate()</h2>
+<a id="a3aeb38c4537c81fcc922aa165f9227b8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3aeb38c4537c81fcc922aa165f9227b8">&#9670;&nbsp;</a></span>evaluate()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -306,7 +308,7 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
           <td class="memname">const uintx_t CParser::evaluate </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
-          <td></td>
+          <td> const</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -421,8 +423,8 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 
 </div>
 </div>
-<a id="acdc46c3502a2d33fe73f79e799bd36c5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acdc46c3502a2d33fe73f79e799bd36c5">&#9670;&nbsp;</a></span>GetInfixString()</h2>
+<a id="ac0474dd2fdea8c253600e2753f1bbab8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac0474dd2fdea8c253600e2753f1bbab8">&#9670;&nbsp;</a></span>GetInfixString()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -431,18 +433,18 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
           <td class="memname">const std::string CParser::GetInfixString </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
-          <td></td>
+          <td> const</td>
         </tr>
       </table>
 </div><div class="memdoc">
 <p>Get the corresponding infix expression string from the expression tree with root pointed to by <code>m_pExpressionTree</code>. Performs an inorder traversal of the expression tree. </p><dl class="section return"><dt>Returns</dt><dd>Infix expression string. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="parser_8cpp_source.html#l00230">230</a> of file <a class="el" href="parser_8cpp_source.html">parser.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parser_8cpp_source.html#l00231">231</a> of file <a class="el" href="parser_8cpp_source.html">parser.cpp</a>.</p>
 
 </div>
 </div>
-<a id="a0666a1ae8b19d3d6facd1934c604a41a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0666a1ae8b19d3d6facd1934c604a41a">&#9670;&nbsp;</a></span>GetPostfixString()</h2>
+<a id="a115f4314427ca324abbc8dfdf06abf4b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a115f4314427ca324abbc8dfdf06abf4b">&#9670;&nbsp;</a></span>GetPostfixString()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -451,7 +453,7 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
           <td class="memname">const std::string CParser::GetPostfixString </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
-          <td></td>
+          <td> const</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -601,14 +603,14 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">= { </div><div class="line">      {ErrorCode::Syntax, <span class="stringliteral">&quot;Syntax error&quot;</span>},</div><div class="line">      {ErrorCode::UnexpectedSymbol, <span class="stringliteral">&quot;Unexpected symbol&quot;</span>},</div><div class="line">      {ErrorCode::Malformed, <span class="stringliteral">&quot;Malformed expression&quot;</span>}</div><div class="line">    }</div></div><!-- fragment --><p>The error map maps an error code to a human-readable string that briefly explains the error. </p>
 
-<p class="definition">Definition at line <a class="el" href="parser_8h_source.html#l00043">43</a> of file <a class="el" href="parser_8h_source.html">parser.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="parser_8h_source.html#l00075">75</a> of file <a class="el" href="parser_8h_source.html">parser.h</a>.</p>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Feb 8 2021 14:42:16 for uintx_t Check by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Feb 10 2021 16:18:06 for uintx_t Check by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.14
 </small></address>
