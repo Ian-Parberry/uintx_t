@@ -75,11 +75,11 @@ bool CParser::factor(CNode*& tree){
   if(accept(SymbolType::Number))
     tree = new CNode(m_nNumber);
   
-  //<factor> -> (<expression>)
+  //<factor> -> <lparen><expression><rparen>
   else if(accept(SymbolType::LParen))
     bError = expression(tree) || !expect(SymbolType::RParen);
   
-  //<factor> -> <identifier>(<expression>)
+  //<factor> -> <identifier><lparen><expression><rparen>
   else if(accept(SymbolType::Identifier) && expect(SymbolType::LParen)){
     CNode* node = nullptr;
     bError = expression(node) || !expect(SymbolType::RParen);
@@ -179,7 +179,7 @@ bool CParser::expression(CNode*& tree){
 /// \return true if the string parsed correctly as an arithmetic expression.
 
 bool CParser::parse(const std::string& s){
-  if(s == "")return true; //nothing to parse
+  if(s.empty())return true; //empty string, nothing to parse so bail out here
 
   m_strBuffer = s; //grab a copy of the expression string
   m_nStrLen = m_strBuffer.length(); //record its length
@@ -204,7 +204,7 @@ bool CParser::parse(const std::string& s){
 /// Evaluate the expression tree with root pointed to by `m_pExpressionTree`.
 /// \return The result of evaluating the parsed arithmetic expression.
 
-const uintx_t CParser::evaluate(){
+const uintx_t CParser::evaluate() const{
   return m_pExpressionTree->evaluate();
 } //evaluate
 
@@ -213,11 +213,12 @@ const uintx_t CParser::evaluate(){
 /// traversal of the expression tree.
 /// \return Postfix expression string.
  
-const std::string CParser::GetPostfixString(){
-  std::string s;
+const std::string CParser::GetPostfixString() const{
+  std::string s; //the result
 
-  if(m_pExpressionTree != nullptr)
+  if(m_pExpressionTree != nullptr) //safety
     m_pExpressionTree->postorder(s);
+  else s = "Error";
 
   return s;
 } //GetPostfixString
@@ -227,11 +228,12 @@ const std::string CParser::GetPostfixString(){
 /// traversal of the expression tree.
 /// \return Infix expression string.
  
-const std::string CParser::GetInfixString(){
-  std::string s;
+const std::string CParser::GetInfixString() const{
+  std::string s; //the result
 
-  if(m_pExpressionTree != nullptr)
+  if(m_pExpressionTree != nullptr) //safety
     m_pExpressionTree->inorder(s);
+  else s = "Error";
 
   return s;
 } //GetInfixString

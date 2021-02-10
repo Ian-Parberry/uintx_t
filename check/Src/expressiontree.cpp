@@ -5,7 +5,10 @@
 
 #include "expressiontree.h"
 
-/// Constructor for operator nodes.
+///////////////////////////////////////////////////////////////////////////////
+// Constructors and destructors.
+
+/// Constructor for operator nodes, which have two children.
 /// \param op Operator.
 /// \param lchild Pointer to left child.
 /// \param rchild Pointer to right child.
@@ -15,14 +18,14 @@ CNode::CNode(Operator op, CNode* lchild, CNode* rchild):
   m_pLeftChild(lchild), m_pRightChild(rchild){
 } //constructor
 
-/// Constructor for number nodes.
+/// Constructor for number nodes, which have no children.
 /// \param n Number.
 
 CNode::CNode(uintx_t n):
   m_eNodeType(NodeType::Number), m_nValue(n){
 } //constructor
 
-/// Constructor for function nodes.
+/// Constructor for function nodes, which has a single child, the left child.
 /// \param identifier Function identifier.
 /// \param lchild Pointer to left child.
 
@@ -31,10 +34,17 @@ CNode::CNode(const std::string& identifier, CNode* lchild):
   m_pLeftChild(lchild){
 } //constructor
 
+/// This recursive destructor deletes the expression tree whose root is pointed
+/// to by its left child pointer, then deletes the expression tree whose root
+/// is pointed to by its right child pointer.
+
 CNode::~CNode(){
   delete m_pLeftChild;
   delete m_pRightChild;
 } //destructor
+
+///////////////////////////////////////////////////////////////////////////////
+//Other functions.
 
 /// Evaluate the arithmetic expression rooted at this node.
 /// \return The value of arithmetic expression rooted at this node.
@@ -63,23 +73,17 @@ const uintx_t CNode::evaluate() const{
       if(m_pLeftChild)operand0 = m_pLeftChild->evaluate(); //get operand
 
       if(m_strIdentifier == "sqrtx")
-         result = sqrtx(operand0);
-
+        result = sqrtx(operand0);
       else if(m_strIdentifier == "sqrx")
-         result = operand0*operand0;
-
+        result = operand0*operand0;
       else if(m_strIdentifier == "factorialx")
-         result = factorialx(to_uint32(operand0));
-
+        result = factorialx(to_uint32(operand0));
       else if(m_strIdentifier == "exp2x")
-         result = exp2x(to_uint32(operand0));
-
+        result = exp2x(to_uint32(operand0));
       else if(m_strIdentifier == "fibx")
-         result = fibx(to_uint32(operand0));
-
+        result = fibx(to_uint32(operand0));
       else if(m_strIdentifier == "log2x")
-         result = log2x(operand0);
-
+        result = log2x(operand0);
       else result = 0;
     break;
   } //switch
