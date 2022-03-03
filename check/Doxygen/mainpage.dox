@@ -1,0 +1,45 @@
+/// \mainpage 
+///
+/// Overview
+/// ========
+///
+/// A program to compute arithmetic expressions using uintx_t.
+/// Enter a parenthesized arithmetic expression using decimal unsigned 
+/// integers of any length, the arithmetic operators \f$+-*/\f$ with normal
+/// operator precedence, and the functions listed in the table below:
+///
+/// <center>
+///  | Function            | Result                                                     |
+///  |---------------------|------------------------------------------------------------|
+///  | \f$\text{sqrtx}(n)\f$      | <center>\f$\lfloor \sqrt{n} \rfloor\f$</center>     |
+///  | \f$\text{sqrx(n)}\f$       | <center>\f$n^2\f$</center>                          |
+///  | \f$\text{factorialx(n)}\f$ | <center>\f$n!\f$</center>                           |
+///  | \f$\text{exp2x(n)}\f$      | <center>\f$2^n\f$</center>                          |
+///  | \f$\text{fibx(n)}\f$       | <center>\f$n^\text{th}\f$ Fibonacci number</center> |
+///  | \f$\text{log2x(n)}\f$      | <center>\f$\lfloor \log_2 n \rfloor\f$</center>     |
+/// </center>
+///
+/// Settings can be adjusted by typing in these commands:
+///
+/// <center>
+/// | Command | Setting                               |
+/// |---------|---------------------------------------|
+/// | verbose | Verbose mode.                         |
+/// | quiet   | Quiet mode.                           |
+/// | decimal | Print results in decimal.             |
+/// | hex     | Print results in hexadecimal.         |
+/// | commas  | Print results in decimal with commas. |
+/// | quit    | Exit.                                 |
+/// </center>                               
+///
+/// The following is a screenshot showing evaluation of an arithmetic
+/// expression under different settings:
+///
+/// \image html ss.png
+///
+/// The code includes a simple lexical analyzer CLex and a recursive descent 
+/// expression parser CParser. It might seem a little opaque unless you have
+/// taken a college-level compiler class or its equivalent.
+///
+
+

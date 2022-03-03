@@ -6,6 +6,7 @@
 /// means that none of them need be a friend to uintx_t.
 
 #include <algorithm>
+#include <cmath>
 #include "uintx_t.h"
 
 /// Raise an extensible unsigned integer to the power of another using
@@ -94,27 +95,27 @@ const uintx_t lcmx(const uintx_t& x, const uintx_t& y){
 /// \return The Fibonacci number with that index, \f$F(n)\f$.
 
 const uintx_t fibx(uint32_t n){
-	uintx_t a(0); //the result
-	uintx_t b(1);
-  uint32_t mask = 1 << (uint32_t)(floor(log2(n))); //most significant bit
+  uintx_t a(0); //the result
+  uintx_t b(1);
+  uint32_t mask = 1 << (uint32_t)(std::floor(std::log2(n))); //most significant bit
 
-	while(mask > 0){
-		uintx_t d = a*(2*b - a);
-		uintx_t e = a*a + b*b;
+  while(mask > 0){
+    uintx_t d = a*(2*b - a);
+    uintx_t e = a*a + b*b;
 
-		a = d; 
+    a = d; 
     b = e;
 
-		if((mask & n) != 0){
-			const uintx_t c = a + b;
-			a = b; 
+    if((mask & n) != 0){
+      const uintx_t c = a + b;
+      a = b; 
       b = c;
-		} //if
+    } //if
 
     mask >>= 1;
-	} //while
+  } //while
 
-	return a;
+  return a;
 } //fibx
 
 /// Find the floor of the square root of an extensible unsigned integer.
@@ -126,7 +127,7 @@ const uintx_t sqrtx(const uintx_t& x){
 
   //start by finding the most significant bit (msb) of the result.
 
-  int32_t j = (log2x(x) - 1)/2 + 1; 
+  int32_t j = log2x(x)/2 + 1; 
 
   uintx_t n = uintx_t(1) << j; //mask for msb of result
   uintx_t n2 = n << j; //mask for msb of result^2

@@ -42,8 +42,6 @@ class uintx_t{
 
     ~uintx_t(); ///< Destructor
 
-    //const uint32_t log2() const; ///< Floor of log base 2.
-
     //assignment operator
 
     uintx_t& operator=(const uintx_t&); ///< Assignment.

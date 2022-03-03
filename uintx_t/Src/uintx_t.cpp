@@ -6,8 +6,10 @@
 #include <cmath>
 #include <algorithm>
 
-const uint32_t NYBBLES = 2*sizeof(uint32_t); ///< Number of nybbles in a word.
-const uint32_t BITS = 4*NYBBLES; ///< Number of bits in a word.
+const uint32_t BYTES_IN_WORD = sizeof(uint32_t); ///< Number of bytes in a word.
+const uint32_t NIBS_IN_WORD = 2*BYTES_IN_WORD; ///< Number of nibbles in a word.
+const uint32_t BITS_IN_WORD = 4*NIBS_IN_WORD; ///< Number of bits in a word.
+const uint32_t MSB = BITS_IN_WORD - 1; ///< Position of most significant bit.
 
 const uintx_t uintx_t::NaN(-1); ///< Extensible unsigned integer not-a-number.
 
@@ -196,7 +198,7 @@ void uintx_t::loadstring(const std::string& s){
   
   const size_t start = (s[0] == '0' && s[1] == 'x')? 2: 0; //skip 0x if present
   const size_t n = s.size() - start;
-  const uint32_t nSize = (uint32_t)std::ceil((double)n/NYBBLES);
+  const uint32_t nSize = (uint32_t)std::ceil((double)n/NIBS_IN_WORD);
 
   if(nSize != m_nSize){
     delete [] m_pData;
@@ -210,8 +212,8 @@ void uintx_t::loadstring(const std::string& s){
   uint32_t word = m_nSize - 1; //current word in long integer
   const size_t digitcount = n; //number of digits in string
 
-  uint32_t shift = (digitcount%NYBBLES)*4; //shift within word
-  if(shift <= 0)shift = BITS; //wrap shift amount
+  uint32_t shift = (digitcount%NIBS_IN_WORD)*4; //shift within word
+  if(shift <= 0)shift = BITS_IN_WORD; //wrap shift amount
 
   m_bNaN = false; //optimistically we believe that this is a number
 
@@ -236,12 +238,12 @@ void uintx_t::loadstring(const std::string& s){
 
     if(!m_bNaN){
       if(shift <= 0){
-        shift = BITS;
+        shift = BITS_IN_WORD;
         word--;
       } //if
 
-      shift = shift - 4;
-      m_pData[word] = m_pData[word] | (digit<<shift);
+      shift -=  4;
+      m_pData[word] |= digit << shift;
     } //if
   } //for
 } //loadstring
@@ -256,7 +258,7 @@ void uintx_t::loadstring(const std::string& s){
 /// \return Floor of the log base 2 of the operand.
 
 const uint32_t log2x(const uintx_t& x){
-  if(x.m_bNaN || x.m_nSize <= 0)return 1;
+  if(x.m_bNaN || x == 0)return 0;
 
   uint32_t word = x.m_pData[x.m_nSize - 1]; //most significant word in x
   uint32_t count = 0; //counter
@@ -266,7 +268,7 @@ const uint32_t log2x(const uintx_t& x){
     count++;
   } //while
 
-  return count + (x.m_nSize - 1)*BITS;
+  return count + (x.m_nSize - 1)*BITS_IN_WORD - 1;
 } //log2x
 
 /////////////////////////////////////////////////////////////////////////////
@@ -319,8 +321,8 @@ uintx_t& uintx_t::operator+=(const uintx_t& y){
     uint32_t sum, sum_msb; //sum and its msb
     uint32_t carry = 0; //single-bit carry
 
-    const uint32_t mask_msb = 1 << (BITS-1); //mask for most significant bit
-    const uint32_t mask_lsb = ~mask_msb; //mask for all but most significant bit
+    const uint32_t mask_msb = 1 << MSB; //mask for most significant bit
+    const uint32_t mask_lsb = ~mask_msb; //mask for the rest of the bits
 
     uint32_t i; //looping variable
     uint32_t oldsize = m_nSize;
@@ -333,24 +335,24 @@ uintx_t& uintx_t::operator+=(const uintx_t& y){
       right = i < y.m_nSize? y.m_pData[i]: 0;
 
       //extract the most significant bit (msb) from each
-      left_msb = (left & mask_msb) >> (BITS - 1);
-      right_msb = (right & mask_msb) >> (BITS - 1);
+      left_msb  = (left  & mask_msb) >> MSB;
+      right_msb = (right & mask_msb) >> MSB;
 
       //zero out the msb from each
-      left = left & mask_lsb;
-      right = right & mask_lsb;
+      left  &= mask_lsb;
+      right &= mask_lsb;
 
       //add them
       sum = left + right + carry;
 
       //compute carry
-      sum_msb = (sum & mask_msb) >> (BITS - 1);
-      sum = sum & mask_lsb;
+      sum_msb = (sum & mask_msb) >> (BITS_IN_WORD - 1);
+      sum &=  mask_lsb;
       carry = left_msb + right_msb + sum_msb; //carry is either 0, 1, 2, or 3 here
 
       //put leading bit of carry back into sum
       if((carry == 1) || (carry == 3))
-        sum = sum | mask_msb;
+        sum |= mask_msb;
 
       m_pData[i] = sum;
 
@@ -583,11 +585,11 @@ uintx_t& uintx_t::operator<<=(int32_t n){
     int32_t oldsize = m_nSize; //save old m_nSize for later
 
     //compute new number of bits - divide by BitsPerWord and round up
-    grow((log2x(*this) + n + BITS - 1)/BITS);
+    grow((log2x(*this) + n + BITS_IN_WORD)/BITS_IN_WORD);
 
     //shift by word
     int32_t dest = m_nSize - 1; //copy destination
-    int32_t src = dest - n/BITS; //copy source
+    int32_t src = dest - n/BITS_IN_WORD; //copy source
 
     while(src >= 0){ //until end of source
       if(src < oldsize)
@@ -599,13 +601,13 @@ uintx_t& uintx_t::operator<<=(int32_t n){
       m_pData[dest--] = 0; //fill bottom with zeros
 
     //shift within words
-    const uint32_t d = n%BITS; //shift distance within words
+    const uint32_t d = n%BITS_IN_WORD; //shift distance within words
 
     if(d > 0)
       for(dest=m_nSize - 1; dest>=0; --dest){
         m_pData[dest] <<= d;
         if(dest > 0)
-          m_pData[dest] = m_pData[dest] | (m_pData[dest - 1] >> (BITS - d));
+          m_pData[dest] |= (m_pData[dest - 1] >> (BITS_IN_WORD - d));
       } //for
   } //if
 
@@ -630,8 +632,8 @@ uintx_t& uintx_t::operator>>=(const int32_t n){
     return *this >>= -n;
 
   if(!m_bNaN){
-    //uint32_t newsize = (this->bitsize() - n + BITS - 1)/BITS;
-    uint32_t newsize = m_nSize - n/BITS;
+    //uint32_t newsize = (this->bitsize() - n + BITS_IN_WORD - 1)/BITS_IN_WORD;
+    uint32_t newsize = m_nSize - n/BITS_IN_WORD;
 
     if(newsize <= 0)
       *this = 0;
@@ -639,7 +641,7 @@ uintx_t& uintx_t::operator>>=(const int32_t n){
     else{
       //first shift by word
       uint32_t dest = 0; //copy destination
-      uint32_t src = dest + n/BITS; //copy source
+      uint32_t src = dest + n/BITS_IN_WORD; //copy source
 
       if(dest != src)
         while(src < m_nSize){ //until end of source
@@ -649,13 +651,13 @@ uintx_t& uintx_t::operator>>=(const int32_t n){
         } //while
 
       //then shift within words
-      const uint32_t d = n%BITS; //shift distance within words
+      const uint32_t d = n%BITS_IN_WORD; //shift distance within words
 
       if(d > 0)
         for(dest=0; dest<newsize; dest++){
           m_pData[dest] >>= d;
           if(dest < m_nSize - 1)
-            m_pData[dest] = m_pData[dest] | (m_pData[dest + 1] << (BITS - d));
+            m_pData[dest] |= (m_pData[dest + 1] << (BITS_IN_WORD - d));
         } //for
     } //else
 
@@ -837,8 +839,8 @@ const uintx_t operator*(const uintx_t& y, const uintx_t& z){
     while(z0 > 0){
       result += uintx_t(y0*z0.m_pData[0]);
 
-      y0 <<= BITS;
-      z0 >>= BITS;
+      y0 <<= BITS_IN_WORD;
+      z0 >>= BITS_IN_WORD;
     } //while
   } //else
 
