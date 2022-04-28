@@ -7,8 +7,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 //Helper functions.
 
-/// Print an error message to stdout. Uses m_mapError to map an error code
-/// to a printable string.
+/// Print an error message to stdout together with the arithmetic expression
+/// with an up-arrow symbol pointing to the character at which the error was
+/// discovered . Uses m_mapError to map an error code to a printable string.
 /// \param e Error code.
  
 void CParser::error(const ErrorCode e){
@@ -67,22 +68,25 @@ const bool CParser::IsTermOp(){
 /// \return true if an error occurred.
 
 bool CParser::factor(CNode*& tree){
-  bool bError = false;
-  std::string identifier = m_strIdentifier;
+  bool bError = false; //error flag
+  const std::string identifier = m_strIdentifier; //current identifier
 
+  //<factor> -> <number>
   if(accept(SymbolType::Number))
     tree = new CNode(m_nNumber);
-
+  
+  //<factor> -> <lparen><expression><rparen>
   else if(accept(SymbolType::LParen))
     bError = expression(tree) || !expect(SymbolType::RParen);
-
+  
+  //<factor> -> <identifier><lparen><expression><rparen>
   else if(accept(SymbolType::Identifier) && expect(SymbolType::LParen)){
     CNode* node = nullptr;
     bError = expression(node) || !expect(SymbolType::RParen);
     if(!bError)tree = new CNode(identifier, node);
   } //else if
 
-  else{
+  else{ //syntax error
     error(ErrorCode::Syntax);
     bError = true;
     getsymbol();
@@ -100,11 +104,12 @@ bool CParser::factor(CNode*& tree){
 /// \return true if an error occurred.
  
 bool CParser::term(CNode*& tree){
-  CNode* lchild = nullptr;
-  CNode* rchild = nullptr;
-  bool bError = factor(lchild);
+  CNode* lchild = nullptr; //left child pointer
+  CNode* rchild = nullptr; //right child pointer
+  bool bError = factor(lchild); //<term> -> <factor>...
   tree = lchild;
 
+  //[<operator><factor>]*
   while(!bError && IsTermOp()){
     Operator op = Operator::None;
 
@@ -133,9 +138,9 @@ bool CParser::term(CNode*& tree){
 /// \return true if an error occurred.
 
 bool CParser::expression(CNode*& tree){
-  CNode* lchild = nullptr;
-  CNode* rchild = nullptr;
-  bool bError = false;
+  CNode* lchild = nullptr; //left child pointer
+  CNode* rchild = nullptr; //right child pointer
+  bool bError = false; //error flag
 
   if(m_eSymbol == SymbolType::Plus || m_eSymbol == SymbolType::Minus)
     bError = getsymbol();
@@ -174,7 +179,7 @@ bool CParser::expression(CNode*& tree){
 /// \return true if the string parsed correctly as an arithmetic expression.
 
 bool CParser::parse(const std::string& s){
-  if(s == "")return true; //nothing to parse
+  if(s.empty())return true; //empty string, nothing to parse so bail out here
 
   m_strBuffer = s; //grab a copy of the expression string
   m_nStrLen = m_strBuffer.length(); //record its length
@@ -199,7 +204,7 @@ bool CParser::parse(const std::string& s){
 /// Evaluate the expression tree with root pointed to by `m_pExpressionTree`.
 /// \return The result of evaluating the parsed arithmetic expression.
 
-const uintx_t CParser::evaluate(){
+const uintx_t CParser::evaluate() const{
   return m_pExpressionTree->evaluate();
 } //evaluate
 
@@ -208,11 +213,12 @@ const uintx_t CParser::evaluate(){
 /// traversal of the expression tree.
 /// \return Postfix expression string.
  
-const std::string CParser::GetPostfixString(){
-  std::string s;
+const std::string CParser::GetPostfixString() const{
+  std::string s; //the result
 
-  if(m_pExpressionTree != nullptr)
+  if(m_pExpressionTree != nullptr) //safety
     m_pExpressionTree->postorder(s);
+  else s = "Error";
 
   return s;
 } //GetPostfixString
@@ -222,11 +228,12 @@ const std::string CParser::GetPostfixString(){
 /// traversal of the expression tree.
 /// \return Infix expression string.
  
-const std::string CParser::GetInfixString(){
-  std::string s;
+const std::string CParser::GetInfixString() const{
+  std::string s; //the result
 
-  if(m_pExpressionTree != nullptr)
+  if(m_pExpressionTree != nullptr) //safety
     m_pExpressionTree->inorder(s);
+  else s = "Error";
 
   return s;
 } //GetInfixString

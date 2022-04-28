@@ -96,9 +96,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a5a170b126ee256852f1b61372f9ca3b4"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_node.html#a5a170b126ee256852f1b61372f9ca3b4">CNode</a> (const std::string &amp;identifier, <a class="el" href="class_c_node.html">CNode</a> *lchild)</td></tr>
 <tr class="memdesc:a5a170b126ee256852f1b61372f9ca3b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor.  <a href="#a5a170b126ee256852f1b61372f9ca3b4">More...</a><br /></td></tr>
 <tr class="separator:a5a170b126ee256852f1b61372f9ca3b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac9b30cb93e91a48dacc58821abfc44f0"><td class="memItemLeft" align="right" valign="top"><a id="ac9b30cb93e91a48dacc58821abfc44f0"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_node.html#ac9b30cb93e91a48dacc58821abfc44f0">~CNode</a> ()</td></tr>
-<tr class="memdesc:ac9b30cb93e91a48dacc58821abfc44f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor. <br /></td></tr>
+<tr class="memitem:ac9b30cb93e91a48dacc58821abfc44f0"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_node.html#ac9b30cb93e91a48dacc58821abfc44f0">~CNode</a> ()</td></tr>
+<tr class="memdesc:ac9b30cb93e91a48dacc58821abfc44f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor.  <a href="#ac9b30cb93e91a48dacc58821abfc44f0">More...</a><br /></td></tr>
 <tr class="separator:ac9b30cb93e91a48dacc58821abfc44f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1c6fa5a68ceb570a770fff8c7858fded"><td class="memItemLeft" align="right" valign="top">const uintx_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_node.html#a1c6fa5a68ceb570a770fff8c7858fded">evaluate</a> () const</td></tr>
 <tr class="memdesc:a1c6fa5a68ceb570a770fff8c7858fded"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate expression sub-tree.  <a href="#a1c6fa5a68ceb570a770fff8c7858fded">More...</a><br /></td></tr>
@@ -189,7 +188,7 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Constructor for operator nodes. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Constructor for operator nodes, which have two children. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">op</td><td>Operator. </td></tr>
     <tr><td class="paramname">lchild</td><td>Pointer to left child. </td></tr>
@@ -198,7 +197,7 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="expressiontree_8cpp_source.html#l00013">13</a> of file <a class="el" href="expressiontree_8cpp_source.html">expressiontree.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="expressiontree_8cpp_source.html#l00016">16</a> of file <a class="el" href="expressiontree_8cpp_source.html">expressiontree.cpp</a>.</p>
 
 </div>
 </div>
@@ -217,14 +216,14 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Constructor for number nodes. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Constructor for number nodes, which have no children. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">n</td><td>Number. </td></tr>
   </table>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="expressiontree_8cpp_source.html#l00021">21</a> of file <a class="el" href="expressiontree_8cpp_source.html">expressiontree.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="expressiontree_8cpp_source.html#l00024">24</a> of file <a class="el" href="expressiontree_8cpp_source.html">expressiontree.cpp</a>.</p>
 
 </div>
 </div>
@@ -253,7 +252,7 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Constructor for function nodes. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Constructor for function nodes, which has a single child, the left child. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">identifier</td><td>Function identifier. </td></tr>
     <tr><td class="paramname">lchild</td><td>Pointer to left child. </td></tr>
@@ -261,7 +260,27 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="expressiontree_8cpp_source.html#l00029">29</a> of file <a class="el" href="expressiontree_8cpp_source.html">expressiontree.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="expressiontree_8cpp_source.html#l00032">32</a> of file <a class="el" href="expressiontree_8cpp_source.html">expressiontree.cpp</a>.</p>
+
+</div>
+</div>
+<a id="ac9b30cb93e91a48dacc58821abfc44f0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac9b30cb93e91a48dacc58821abfc44f0">&#9670;&nbsp;</a></span>~CNode()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">CNode::~CNode </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>This recursive destructor deletes the expression tree whose root is pointed to by its left child pointer, then deletes the expression tree whose root is pointed to by its right child pointer. </p>
+
+<p class="definition">Definition at line <a class="el" href="expressiontree_8cpp_source.html#l00041">41</a> of file <a class="el" href="expressiontree_8cpp_source.html">expressiontree.cpp</a>.</p>
 
 </div>
 </div>
@@ -282,7 +301,7 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 </div><div class="memdoc">
 <p>Evaluate the arithmetic expression rooted at this node. </p><dl class="section return"><dt>Returns</dt><dd>The value of arithmetic expression rooted at this node. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="expressiontree_8cpp_source.html#l00042">42</a> of file <a class="el" href="expressiontree_8cpp_source.html">expressiontree.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="expressiontree_8cpp_source.html#l00052">52</a> of file <a class="el" href="expressiontree_8cpp_source.html">expressiontree.cpp</a>.</p>
 
 </div>
 </div>
@@ -308,7 +327,7 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="expressiontree_8cpp_source.html#l00133">133</a> of file <a class="el" href="expressiontree_8cpp_source.html">expressiontree.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="expressiontree_8cpp_source.html#l00137">137</a> of file <a class="el" href="expressiontree_8cpp_source.html">expressiontree.cpp</a>.</p>
 
 </div>
 </div>
@@ -343,7 +362,7 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The string for the operator. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="expressiontree_8cpp_source.html#l00094">94</a> of file <a class="el" href="expressiontree_8cpp_source.html">expressiontree.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="expressiontree_8cpp_source.html#l00098">98</a> of file <a class="el" href="expressiontree_8cpp_source.html">expressiontree.cpp</a>.</p>
 
 </div>
 </div>
@@ -369,14 +388,14 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="expressiontree_8cpp_source.html#l00109">109</a> of file <a class="el" href="expressiontree_8cpp_source.html">expressiontree.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="expressiontree_8cpp_source.html#l00113">113</a> of file <a class="el" href="expressiontree_8cpp_source.html">expressiontree.cpp</a>.</p>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Feb 2 2021 12:48:34 for uintx_t Check by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Feb 10 2021 16:18:06 for uintx_t Check by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.14
 </small></address>

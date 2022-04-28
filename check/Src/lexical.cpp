@@ -86,14 +86,13 @@ bool CLex::getsymbol(){
   return error;
 } //getsymbol
 
-/// Get a number.
-/// Assumes that `m_strBuffer[m_nCurChar]` is a digit. 
+/// Get a number. Assumes that `m_strBuffer[m_nCurChar]` is a digit. 
 /// Reads the unsigned number starting there into `m_nNumber`.
 
 void CLex::getnumber(){
   m_nNumber = 0;
 
-  do{
+  do{ //must have at least one digit
     m_nNumber = m_nNumber*10 + m_strBuffer[m_nCurChar++] - '0';
   }while(m_nCurChar < m_nStrLen && isNumeric(m_strBuffer[m_nCurChar]));
 } //getnumber
@@ -107,7 +106,7 @@ bool CLex::getidentifier(){
   bool bError = false; //error flag
   std::string strIdentifier; //current identifier
 
-  do{
+  do{ //must have at least one letter
     strIdentifier += m_strBuffer[m_nCurChar++];
   }while(m_nCurChar < m_nStrLen && isAlphaNumeric(m_strBuffer[m_nCurChar]));
 

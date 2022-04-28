@@ -101,7 +101,7 @@ Protected Member Functions</h2></td></tr>
 <tr class="memdesc:a4abfe062def17c2f3cf411148cd949c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get number into m_nNumber.  <a href="#a4abfe062def17c2f3cf411148cd949c2">More...</a><br /></td></tr>
 <tr class="separator:a4abfe062def17c2f3cf411148cd949c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0ce7437771c4f2636b03dcc83d9ebc75"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_lex.html#a0ce7437771c4f2636b03dcc83d9ebc75">getidentifier</a> ()</td></tr>
-<tr class="memdesc:a0ce7437771c4f2636b03dcc83d9ebc75"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get identifier into m_eSymbol.  <a href="#a0ce7437771c4f2636b03dcc83d9ebc75">More...</a><br /></td></tr>
+<tr class="memdesc:a0ce7437771c4f2636b03dcc83d9ebc75"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get identifier into m_strIdentifier.  <a href="#a0ce7437771c4f2636b03dcc83d9ebc75">More...</a><br /></td></tr>
 <tr class="separator:a0ce7437771c4f2636b03dcc83d9ebc75"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
@@ -127,17 +127,17 @@ size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cl
 <tr class="separator:a9b5c3350d5d3d7eb753e5e86a7bdce06"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a20da8fbf0a20b8b405d25b0dfa097838"><td class="memItemLeft" align="right" valign="top"><a id="a20da8fbf0a20b8b405d25b0dfa097838"></a>
 uintx_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_lex.html#a20da8fbf0a20b8b405d25b0dfa097838">m_nNumber</a> = 0</td></tr>
-<tr class="memdesc:a20da8fbf0a20b8b405d25b0dfa097838"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current number parsed, if there is one. <br /></td></tr>
+<tr class="memdesc:a20da8fbf0a20b8b405d25b0dfa097838"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current number. <br /></td></tr>
 <tr class="separator:a20da8fbf0a20b8b405d25b0dfa097838"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6c175ebf2c52f67adb1a2e7769d169bf"><td class="memItemLeft" align="right" valign="top"><a id="a6c175ebf2c52f67adb1a2e7769d169bf"></a>
 std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_lex.html#a6c175ebf2c52f67adb1a2e7769d169bf">m_strIdentifier</a></td></tr>
-<tr class="memdesc:a6c175ebf2c52f67adb1a2e7769d169bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Identifier string. <br /></td></tr>
+<tr class="memdesc:a6c175ebf2c52f67adb1a2e7769d169bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current identifier string. <br /></td></tr>
 <tr class="separator:a6c175ebf2c52f67adb1a2e7769d169bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>A simple lexical analyzer for arithmetic expressions. </p>
+<div class="textblock"><p>A simple lexical analyzer for arithmetic expressions. A lexical analyzer breaks up the character input into tokens. Each token consists of a SymbolType accompanied by a uintx_t if the symbol type is SymbolType::Number, and a string containing an identifier name if the symbol type is SymbolType::Identifier. </p>
 
-<p class="definition">Definition at line <a class="el" href="lexical_8h_source.html#l00024">24</a> of file <a class="el" href="lexical_8h_source.html">lexical.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="lexical_8h_source.html#l00028">28</a> of file <a class="el" href="lexical_8h_source.html">lexical.h</a>.</p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="a0ce7437771c4f2636b03dcc83d9ebc75"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0ce7437771c4f2636b03dcc83d9ebc75">&#9670;&nbsp;</a></span>getidentifier()</h2>
@@ -244,14 +244,14 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">= { </div><div class="line">      <span class="stringliteral">&quot;sqrtx&quot;</span>, <span class="stringliteral">&quot;sqrx&quot;</span>, <span class="stringliteral">&quot;factorialx&quot;</span>, <span class="stringliteral">&quot;exp2x&quot;</span>, <span class="stringliteral">&quot;fibx&quot;</span>, <span class="stringliteral">&quot;log2x&quot;</span></div><div class="line">    }</div></div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="lexical_8h_source.html#l00026">26</a> of file <a class="el" href="lexical_8h_source.html">lexical.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="lexical_8h_source.html#l00030">30</a> of file <a class="el" href="lexical_8h_source.html">lexical.h</a>.</p>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Feb 2 2021 12:48:34 for uintx_t Check by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Feb 10 2021 16:18:06 for uintx_t Check by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.14
 </small></address>
