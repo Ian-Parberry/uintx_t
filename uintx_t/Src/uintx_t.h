@@ -112,15 +112,15 @@ class uintx_t{
     friend const uint32_t log2x(const uintx_t&); ///< Floor of log base 2.
 
     //type conversions
+    
+    friend const std::string to_hexstring(const uintx_t&); ///< To hex string.
+    friend const std::string to_string(const uintx_t&, const uint32_t); ///<To string.
+    friend const std::string to_commastring(const uintx_t&); ///<To comma separated string.
 
-    friend const std::string to_hexstring(const uintx_t& x); ///< To hex string.
-    friend const std::string to_string(const uintx_t& x); ///<To decimal string.
-    friend const std::string to_commastring(const uintx_t& x); ///<To comma separated string.
-
-    friend const uint32_t to_uint32(const uintx_t& x); ///< To 32-bit unsigned int.
-    friend const uint64_t to_uint64(const uintx_t& x); ///< To 64-bit unsigned int.
-    friend const float to_float(const uintx_t& x); ///< To single precision floating point.
-    friend const double to_double(const uintx_t& x); ///< To double precision floating point.
+    friend const uint32_t to_uint32(const uintx_t&); ///< To 32-bit unsigned int.
+    friend const uint64_t to_uint64(const uintx_t&); ///< To 64-bit unsigned int.
+    friend const float to_float(const uintx_t&); ///< To single precision floating point.
+    friend const double to_double(const uintx_t&); ///< To double precision floating point.
 
     //constants
 

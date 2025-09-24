@@ -995,15 +995,24 @@ const double to_double(const uintx_t& x){
   return result;
 } //to_double
 
-/// Convert to a hexadecimal string with "0x" at the front.
+/// Convert to a binary string.
 /// \param x Operand.
-/// \return std::string containing the operand in hexadecimal notation.
+/// \return std::string containing the operand in binary notation.
+
+const std::string to_bitstring(const uintx_t& x){  
+  return to_string(x, 1);
+} //to_bitstring
+
+/// Convert to a string in hex.
+/// \param x Operand.
+/// \return std::string containing the operand.
 
 const std::string to_hexstring(const uintx_t& x){  
   if(x.m_bNaN)return std::string("NaN");
+
   std::string s; //result
 
-  //convert to a backwards hex string, ie. least-significant digit first
+  //convert to a backwards string, ie. least-significant digit first
 
   for(uint32_t i=0; i<x.m_nSize; i++){ //for each word, least significant first
     uint32_t n = x.m_pData[i]; //current word
@@ -1011,9 +1020,9 @@ const std::string to_hexstring(const uintx_t& x){
 
     for(auto i=0; i<size; i++){ //for each digit, least-significant first
       const uint32_t digit = n & 0xF; //grab a digit
-      const char c = char(digit + (digit < 10? '0': 'A' - 10));
+      const char c = char(digit + (digit < 10? '0': 'A' - 10)); //convert to char
       s += c; //append to string
-      n >>= 4; //next digit
+      n >>= 4; //for next digit
     } //while
   } //for
 
@@ -1025,7 +1034,6 @@ const std::string to_hexstring(const uintx_t& x){
   } //while
 
   if(s == "")s = "0"; //safety
-  s += "x0"; //hex indicator, backwards
 
   //reverse the string to make it most significant digit first, and return
 
@@ -1035,9 +1043,10 @@ const std::string to_hexstring(const uintx_t& x){
 
 /// Convert to a decimal string.
 /// \param x Operand.
+/// \param base Base, assumed to be at most 10.
 /// \return std::string containing the operand in decimal notation.
 
-const std::string to_string(const uintx_t& x){  
+const std::string to_string(const uintx_t& x, const uint32_t base){  
   if(x.m_bNaN)return std::string("NaN");
   std::string s; //result
 
@@ -1048,10 +1057,10 @@ const std::string to_string(const uintx_t& x){
     uintx_t y(x);
 
     while(y > 0){
-      const uint32_t digit = to_uint32(y%10);
+      const uint32_t digit = to_uint32(y%base);
       const char c = char(digit + '0');
       s += c;
-      y /= 10;
+      y /= base;
     } //while
   } //else
   
@@ -1066,7 +1075,7 @@ const std::string to_string(const uintx_t& x){
 const std::string to_commastring(const uintx_t& x){  
   if(x.m_bNaN)return std::string("NaN");
 
-  std::string s = to_string(x); //result
+  std::string s = to_string(x, 10UL); //result
   const int32_t n = (int32_t)s.length() - 3; //position of first comma
 
   for(int32_t i=n; i>0; i-=3) //every third character
